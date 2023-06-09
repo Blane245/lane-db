@@ -1,104 +1,90 @@
 var User = require('../models/user');
 const { body, validationResult } = require('express-validator');
 const { JsonWebToken } = require('jsonwebtoken');
+var async = require('async');
+const { errorMonitor } = require('mysql2/typings/mysql/lib/Connection');
 
-// Display user signup form on GET.
-exports.user_signup_get = function(req, res, next) {
-    res.render('signup', { title: 'Sign up for Lane Database'});
+//TODO implement administrator authentication
+
+// List users GET request
+exports.usersList = function(req, res, next) {
+
+    async.parallel({
+        users: function(callback) { 
+            User.find({}, callback);
+        },
+    }, function (err, results){
+        const usersList = [];
+        const errors = [];
+        if (err) {
+            errors.push ({message: err.message});
+            res.status(500).json(errors);
+        } else {
+
+            // includes builtin attributes  id, title, description, published, createdAt, updatedAt
+            for (let i = 0; i < results.orgs.length; i++) {
+                usersList.push (results.users[i]);
+            }
+
+            res.json(usersList);
+        }
+    })
+
 };
 
-// Handle user signup form on POST
-exports.user_signup_post = [
+// Handle user create form on POST
+exports.usersCreate = [
 
     // validate and sanitize fields
     body('name', 'Name cannot be blank').trim().isLength({min: 1}).escape(),
-    body('email', 'Email cannot be blank').trim().isLength({min: 1}).escape(),
-    body('password', 'Password cannot be blank').trim().isLength({min: 1}).escape(),
-    body('confirmPassword', 'Confirm password cannot be blank').trim().isLength({min: 1}).escape(),
+    body('email').isEmail().withMessage('Not a valid email address'),
+    body('isAdministrator').custom(async value => {
+        if (value != 'yes' && value != 'no')
+            throw new Error ('isAdministrator must be yes or no')
+    }),
 
     // save the new user unless it's a duplicate
     (req, res, next) => {
-        var errors = validationResult(req).array();
-        if (req.body.password != req.body.confirmPassword) {
-            errors.push({msg: 'The password and configration passwrod must match'});
-        }
+        const errors = validationResult(req).array();
         User.findOne({'name': req.body.name}).then(user => {
             if (user) {
-                errors.push({msg: 'User already exists.'});
+                errors.push({msg: `User ${req.body.name} already exists.`});
             }
         
             // create an organization object with escaped and trimmed data
             var newUser = new User (
                 { name: req.body.name,
                     email: req.body.email,
-                    password: req.body.password,
-                    isAdministrator: false,
+                    isAdministrator: req.body.isAdministrator,
                  });
 
             // repost if any errors
             if (errors.length != 0) {
-                res.render('signup', {
-                    title: 'Sign up for Lane Database', 
-                    user: newUser,
-                    errors:  errors });
+                res.status(400).json(errors);
             } else {
 
                 // a user with a new name. save it
                 newUser.save(function (err) {
-                    if (err) { return next (err);}
+                    if (err) { res.status(500).json([{msg: err.message}]);}
+
                     // the user has been created, send the signed json token
-                    const token = JsonWebToken.sign ({ name: newUser.name}, SECRET_JWT_CODE);
+                    //const token = JsonWebToken.sign ({ name: newUser.name}, SECRET_JWT_CODE);
                     //TODO this is the wrong responder
-                    res.json({ success: true, token: token, });
+                    res.json(
+                        {message:
+                            `User ${req.body.name} with email ${req.body.email} added. Administrative privileges: ${req.body.isAdministrator}`});
                 });
             }
         });
     }
 ];
 
-// Display user login form on GET.
-exports.user_login_get = function(req, res, next) {
-    res.render('login', { title: 'Login to Lane Database'});
+// user modify on PUT.
+exports.usersModify = function(req, res, next) {
+    res.statue(501).json({message: 'not implemented'})
 };
 
-// Handle user login form on POST
-exports.user_login_post = [
-
-    // validate and sanitize fields
-    body('name', 'Name cannot be blank').trim().isLength({min: 1}).escape(),
-    body('password', 'Password cannot be blank').trim().isLength({min: 1}).escape(),
-
-    // check that the user exists and the password matches
-    (req, res, next) => {
-        User.findOne({'name': req.body.name}).then((user) => {
-            if (!user) {
-                errors.push({msg: 'Either the user name or password is incorrect'});
-            } else {
-                if (req.body.password != user.password) 
-                    errors.push({msg: 'Either the user name or password is incorrect'});
-            }
-
-            if (errors.length != 0) {
-                res.render('login', {
-                    title: 'Login to Lane Database', 
-                    user: user,
-                    errors:  errors });
-
-            } else {
-                // the user exists and the password matches, send the signed json token
-                const token = JsonWebToken.sign ({ name: user.name}, SECRET_JWT_CODE);
-                //TODO this is the wrong responder
-                res.json({ success: true, token: token, });
-            }
-
-        });
-    }
-];
-
-// Cancel login on GET.
-exports.user_cancel_get = function(req, res, next) {
-
-    //TODO this is the wrong responder
-    res.json({ success: false, token: null, });
+// user delete on DELETE
+exports.usersDelete = function(req, res, next) {
+    res.statue(501).json({message: 'not implemented'})
 };
-

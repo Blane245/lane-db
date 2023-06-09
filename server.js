@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const bodyParser = require ('body-parser');
+require('dotenv').config();
 
 var corsOptions = { origin:"http://localhost:8081"}
 
@@ -28,7 +29,7 @@ app.use("/", indexRouter);
 // app.use("/user", userRouter);
 
 // set up the listener
-const port = process.env.PORT || 8080;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`server is running on port ${port}.`);
 });
@@ -37,8 +38,8 @@ app.listen(port, () => {
 
 const db = require("./app/models/_index");
 //TODO when in production, drop the sync arguments
-db.sequelize.sync ({ force: true }).then(() => {
-  console.log("Drop and re-sync db.");
+db.sequelize.sync (/*{ force: true }*/).then(() => {
+  console.log("connected to data base.");
 });
 
 

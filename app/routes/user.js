@@ -2,19 +2,16 @@ var express = require('express');
 var router = express.Router();
 var user_controller = require('../controllers/userController');
 
-/* GET request for signup */
-router.get('/signup', user_controller.user_signup_get);
+/* GET request for list users */
+router.get('/users', user_controller.usersList);
 
-/* Post request for signup */
-router.post('/signup', user_controller.user_signup_post);
+/* POST request for create user */
+router.post('/users', user_controller.usersCreate);
 
-/* GET request for login */
-router.get('/login', user_controller.user_login_get);
+/* PUT request for modify user */
+router.put('/users', user_controller.usersModify);
 
-/* Post request for login */
-router.post('/login', user_controller.user_login_post);
-
-/* GET request for cancel */
-router.get('/cancel', user_controller.user_cancel_get);
+/* DELETE request for login */
+router.delete('/users', user_controller.usersDelete);
 
 module.exports = router;
