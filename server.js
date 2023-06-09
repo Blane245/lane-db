@@ -2,26 +2,20 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const bodyParser = require ('body-parser');
-
-//reading env variables for local dev
 require('dotenv').config();
 
-process.env.USER_ID; // "239482"
-process.env.USER_KEY; // "foobar"
-process.env.NODE_ENV; // "development"
-
-//var corsOptions = { origin:"http://localhost:8081"}
+var corsOptions = { origin:"http://localhost:8082"}
 
 const app= express();
-//app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//app.use(express.static(path.join(__dirname, 'public')));
-//app.use(express.static(path.join(__dirname, 'node_modules')));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'node_modules')));
 
 // log every request to teh console
 const router = express.Router();
@@ -35,8 +29,7 @@ app.use("/", indexRouter);
 // app.use("/user", userRouter);
 
 // set up the listener
-
-const port = process.env.PORT || 8080
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`server is running on port ${port}.`);
 });
@@ -45,8 +38,8 @@ app.listen(port, () => {
 
 const db = require("./app/models/_index");
 //TODO when in production, drop the sync arguments
-db.sequelize.sync ({ force: true }).then(() => {
-  console.log("Drop and re-sync db.");
+db.sequelize.sync (/*{ force: true }*/).then(() => {
+  console.log("connected to data base.");
 });
 
 
@@ -65,4 +58,3 @@ db.sequelize.sync ({ force: true }).then(() => {
 //   res.status(err.status || 500);
 //   res.render('error');
 // });
-
