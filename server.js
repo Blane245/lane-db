@@ -24,8 +24,9 @@ router.use(function(req,res,next) {
 });
 // router tables
 const indexRouter = require("./app/routes/index");
-// const userRouter = require("./app/routes/user");
+const userRouter = require("./app/routes/user");
 app.use("/", indexRouter);
+app.use("/users", userRouter);
 // app.use("/user", userRouter);
 
 // set up the listener

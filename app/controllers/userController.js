@@ -2,7 +2,6 @@ var User = require('../models/user');
 const { body, validationResult } = require('express-validator');
 const { JsonWebToken } = require('jsonwebtoken');
 var async = require('async');
-const { errorMonitor } = require('mysql2/typings/mysql/lib/Connection');
 
 //TODO implement administrator authentication
 
