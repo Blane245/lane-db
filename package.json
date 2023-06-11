@@ -1,4 +1,8 @@
 {
+  "name": "lane-db",
+  "version": "0.0.1",
+  "description": "Database server for the lane family",
+  "main": "server.js",
   "dependencies": {
     "async": "^3.2.4",
     "bcryptjs": "^2.4.3",
@@ -10,7 +14,13 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
-    "pug": "^3.0.2",
     "sequelize": "^6.31.1"
-  }
+  },
+  "keywords": [
+    "node.js",
+    "jwt",
+    "authentication",
+    "express",
+    "mysql"
+  ]
 }
