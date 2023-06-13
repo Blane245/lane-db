@@ -2,7 +2,7 @@ const db = require("../models");
 const ROLES = db.ROLES;
 const User = db.user;
 
-checkDuplicateUsernameOrEmail = (req, res, next) => {
+checkUsernameAndEmail = (req, res, next) => {
   // Username
   User.findOne({
     where: {
@@ -29,9 +29,18 @@ checkDuplicateUsernameOrEmail = (req, res, next) => {
           });
           return;
         }
-
-        next();
       });
+    } else {
+      res.status(400).send({
+        message: "Email address is required!"
+      });
+      return;
+    }
+    if (!req.query.password) {
+      res.statue(400).send({
+        message: "Password is required!"
+      });
+      return;
     }
     next();
   });
@@ -53,7 +62,7 @@ checkRolesExisted = (req, res, next) => {
 };
 
 const verifySignUp = {
-  checkDuplicateUsernameOrEmail: checkDuplicateUsernameOrEmail,
+  checkUsernameAndEmail,
   checkRolesExisted: checkRolesExisted
 };
 

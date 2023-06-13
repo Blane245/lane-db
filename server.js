@@ -6,6 +6,7 @@ const bodyParser = require ('body-parser');
 var bcrypt = require("bcryptjs");
 require('dotenv').config();
 
+
 var corsOptions = { origin: "*"};
 
 const app= express();
@@ -65,17 +66,12 @@ async function initial (db) {
   const Role = db.role;
   const User = db.user;
   
-  const role1 = await Role.create({
-    name: "user"});
-  console.log("created Role:", JSON.stringify(role1, null, 2) );
-  
-  const role2 = await Role.create({
-    name: "moderator"});
-  console.log("created Role:", JSON.stringify(role2, null, 2) );
-  
-  const role3 = await Role.create({
-    name: "admin"});
-  console.log("created Role:", JSON.stringify(role3, null, 2) );
+  const roles = []
+  db.ROLES.forEach (async function (rolename) {
+    const role = await Role.create({name: rolename});
+    roles.push(role);
+    console.log("created Role:", JSON.stringify(role, null, 2));
+  });
   
   const user = await User.create({
     username: "root",
@@ -84,10 +80,9 @@ async function initial (db) {
   })
   console.log("created User:", JSON.stringify(user, null, 2) );
   
-
   // make root have all roles
-  const result = await user.setRoles([role1, role2, role3]);
-  console.log("added roles to root", role1.id, role2.id, role3.id);
+  const result = await user.setRoles(roles);
+  console.log("added all roles to root");
 }
 
   
