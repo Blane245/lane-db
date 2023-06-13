@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config/auth.config.js");
-const db = require("../models/index.js");
+const db = require("../models");
 const User = db.user;
+
 verifyToken = (req, res, next) => {
-  let token = req.headers["x-access-token"];
+  let token = req.session.token;
 
   if (!token) {
     return res.status(403).send({
@@ -22,76 +23,77 @@ verifyToken = (req, res, next) => {
   });
 };
 
-isAdmin = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    const roles = getRoles (user);
+isAdmin = async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.userId);
+    const roles = await user.getRoles();
+
     for (let i = 0; i < roles.length; i++) {
       if (roles[i].name === "admin") {
-        next();
-        return;
+        return next();
       }
     }
-    res.status(403).send({
-      message: "Require Admin Role!"
+
+    return res.status(403).send({
+      message: "Require Admin Role!",
     });
-    return;
-  });
+  } catch (error) {
+    return res.status(500).send({
+      message: "Unable to validate User role!",
+    });
+  }
 };
 
-isModerator = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    const roles = getRoles (user);
+isModerator = async (req, res, next) => {
+  try {
+    const user = await User.findByPk(req.userId);
+    const roles = await user.getRoles();
+
     for (let i = 0; i < roles.length; i++) {
       if (roles[i].name === "moderator") {
-        next();
-        return;
+        return next();
       }
     }
-    res.status(403).send({
-      message: "Requires Modertor Role!"
+
+    return res.status(403).send({
+      message: "Require Moderator Role!",
     });
-    return;
-  });
+  } catch (error) {
+    return res.status(500).send({
+      message: "Unable to validate Moderator role!",
+    });
+  }
 };
 
-isModeratorOrAdmin = (req, res, next) => {
-  User.findByPk(req.userId).then(user => {
-    const roles = getRoles (user);
-    for (let i = 0; i < roles.length; i++) {
-      if (roles[i].name === "admin" || roles[i].name === "moderator") {
-        next();
-        return;
-      }
-    }
-    res.status(403).send({
-      message: "Require Admin or Moderator Role!"
-    });
-    return;
-  });
-};
-
-async function getRoles (user) {
-  const theRoles = [];
+isModeratorOrAdmin = async (req, res, next) => {
   try {
-    Users_roles.findAll({
-      where: {userId: user.id},
-      include:[{
-        model:db.role,
-        attributes: ['name'],
-      }]
-    }).then(users_roles => {
-      theRoles = users_roles.name;
-    }); 
-  } catch (err) {
-      res.send(err);
+    const user = await User.findByPk(req.userId);
+    const roles = await user.getRoles();
+
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "moderator") {
+        return next();
+      }
+
+      if (roles[i].name === "admin") {
+        return next();
+      }
     }
-  return theRoles;
-}
+
+    return res.status(403).send({
+      message: "Require Moderator or Admin Role!",
+    });
+  } catch (error) {
+    return res.status(500).send({
+      message: "Unable to validate Moderator or Admin role!",
+    });
+  }
+};
 
 const authJwt = {
-  verifyToken: verifyToken,
-  isAdmin: isAdmin,
-  isModerator: isModerator,
-  isModeratorOrAdmin: isModeratorOrAdmin
+  verifyToken,
+  isAdmin,
+  isModerator,
+  isModeratorOrAdmin,
 };
 module.exports = authJwt;

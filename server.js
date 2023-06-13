@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
+const cookieSession = require("cookie-session");
 const path = require("path");
 const bodyParser = require ('body-parser');
+var bcrypt = require("bcryptjs");
 require('dotenv').config();
 
 var corsOptions = { origin: "*"};
@@ -13,6 +15,11 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieSession ({
+  name: "lanedb-session",
+  keys: ["COOKIE_SECRET"],
+  httpOnly: true,
+}));
 
 // routes
 require("./app/routes/auth.routes")(app);
@@ -36,19 +43,20 @@ db.sequelize.sync ({ force: true }).then(() => {
 
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404, 'Page not found: ' + req.url ));
-});
+//app.use(function(req, res, next) {
+//  next(createError(404, 'Page not found: ' + req.url ));
+//});
   
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
+  console.log(err);
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
 
   // render the error page
   res.status(err.status || 500);
-  res.render('error');
+  res.send(res.locals.message);
 });
 
 
@@ -56,40 +64,30 @@ app.use(function(err, req, res, next) {
 async function initial (db) {
   const Role = db.role;
   const User = db.user;
-  const Users_Roles = db.users_roles;
-  let role = null;
-  let user = null;
-  role = await Role.create({
+  
+  const role1 = await Role.create({
     name: "user"});
-  console.log("created Role:", JSON.stringify(role, null, 2) );
+  console.log("created Role:", JSON.stringify(role1, null, 2) );
   
-  role = await Role.create({
+  const role2 = await Role.create({
     name: "moderator"});
-  console.log("created Role:", JSON.stringify(role, null, 2) );
+  console.log("created Role:", JSON.stringify(role2, null, 2) );
   
-  role = await Role.create({
+  const role3 = await Role.create({
     name: "admin"});
-  console.log("created Role:", JSON.stringify(role, null, 2) );
+  console.log("created Role:", JSON.stringify(role3, null, 2) );
   
-  user = await User.create({
+  const user = await User.create({
     username: "root",
     email: "blane2245@gmail.com",
-    password: "root"
+    password: bcrypt.hashSync("root", 8)
   })
-  console.log("created User:", JSON.stringify(user, null, 2) );;
+  console.log("created User:", JSON.stringify(user, null, 2) );
   
 
   // make root have all roles
-  const roles = await Role.findAll ();
-  console.log(roles);
-  for (const role of roles) {
-    const users_roles = await Users_Roles.create ({
-      "userId": 1,
-      "roleId": role.id,
-    })
-    console.log("create user_role:", JSON.stringify(users_roles, null, 2));
-    
-  }
+  const result = await user.setRoles([role1, role2, role3]);
+  console.log("added roles to root", role1.id, role2.id, role3.id);
 }
 
   
