@@ -16,7 +16,8 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
-    "sequelize": "^6.31.1"
+    "sequelize": "^6.31.1",
+    "todo": "^1.1.0"
   },
   "keywords": [
     "node.js",
@@ -28,5 +29,5 @@
     "authentication",
     "authorization",
     "mysql"
-    ]
+  ]
 }

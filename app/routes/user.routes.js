@@ -10,27 +10,28 @@ module.exports = function(app) {
     next();
   });
 
-  // only administrators can access these functions
+  // only administrators can access this function
   app.get ("/users", 
-    [authJwt.verifyToken, authJwt.isAdmin],
+    authJwt.verifyToken, 
+    authJwt.isAdmin,
     controller.listUsers
   );
 
-  app.post(
-    "/users",
-    [authJwt.verifyToken, authJwt.isAdmin],
-    controller.createUser
-  );
+  // user creation handle by signup
 
+  // the current user can modify email or password
   app.put(
     "/users",
-    [authJwt.verifyToken, authJwt.isAdmin],
+    authJwt.verifyToken,
+    authJwt.isCurrentUser,
     controller.modifyUser
-  );
+  )
 
+  // the administrator or the current user only can delete user
   app.delete(
     "/users",
-    [authJwt.verifyToken, authJwt.isAdmin],
+    authJwt.verifyToken,
+    authJwt.isAdminOrCurrentUser,
     controller.deleteUser
   );
 };

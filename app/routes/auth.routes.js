@@ -12,10 +12,8 @@ module.exports = function(app) {
 
   app.post(
     "/auth/signup",
-    [
-      verifySignUp.checkUsernameAndEmail,
-      verifySignUp.checkRolesExisted
-    ],
+    verifySignUp.checkUsernameAndEmail,
+    verifySignUp.checkRolesExist,
     controller.signup
   );
 

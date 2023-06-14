@@ -19,7 +19,7 @@ verifyToken = (req, res, next) => {
       });
     }
     req.userId = decoded.id;
-    next();
+    return next();
   });
 };
 
@@ -35,10 +35,10 @@ isAdmin = async (req, res, next) => {
     }
 
     return res.status(403).send({
-      message: "Require Admin Role!",
+      message: "Requires Admin Role!",
     });
   } catch (error) {
-    return res.status(500).send({
+    res.status(500).send({
       message: "Unable to validate User role!",
     });
   }
@@ -56,10 +56,10 @@ isModerator = async (req, res, next) => {
     }
 
     return res.status(403).send({
-      message: "Require Moderator Role!",
+      message: "Requires Moderator Role!",
     });
   } catch (error) {
-    return res.status(500).send({
+    res.status(500).send({
       message: "Unable to validate Moderator role!",
     });
   }
@@ -71,29 +71,71 @@ isModeratorOrAdmin = async (req, res, next) => {
     const roles = await user.getRoles();
 
     for (let i = 0; i < roles.length; i++) {
-      if (roles[i].name === "moderator") {
-        return next();
-      }
-
-      if (roles[i].name === "admin") {
+      if (roles[i].name === "moderator" || roles[i].name === "admin") {
         return next();
       }
     }
 
     return res.status(403).send({
-      message: "Require Moderator or Admin Role!",
+      message: "Requires Moderator or Admin Role!",
     });
   } catch (error) {
-    return res.status(500).send({
+    res.status(500).send({
       message: "Unable to validate Moderator or Admin role!",
     });
   }
 };
+
+//Either the current user is admin or the current user matches the user being requested
+isAdminOrCurrentUser = async (req,res, next) => {
+  try {
+    const user = await User.findByPk(req.userId);
+
+    // first the admin
+    const roles = await user.getRoles();
+
+    for (let i = 0; i < roles.length; i++) {
+      if (roles[i].name === "admin") {
+        return next();
+      }
+    }
+
+    // check match between the current user and the one being requested
+    // not providing username in query handled by the delete controller.
+    if (req.query.username) {
+      const reqUser = await User.findOne({
+        where: {
+          username: req.query.username,
+        },
+      });
+
+      if (reqUser.id != req.userId) {
+        return res.status(403).send({
+          message: "You can only delete yourself unless you are an admin!",
+        });
+      }
+    } 
+    return next();
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Unable to validate Moderator or Admin role!",
+    });
+  }
+};
+
+
+//TODO implement
+isCurrentUser = async (req,res, next) => {
+  return next();
+}
 
 const authJwt = {
   verifyToken,
   isAdmin,
   isModerator,
   isModeratorOrAdmin,
+  isCurrentUser,
+  isAdminOrCurrentUser,
 };
 module.exports = authJwt;

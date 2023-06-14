@@ -10,10 +10,9 @@ checkUsernameAndEmail = (req, res, next) => {
     }
   }).then(user => {
     if (user) {
-      res.status(400).send({
+      return res.status(400).send({
         message: "Failed! Username is already in use!"
       });
-      return;
     }
 
     // Email
@@ -24,46 +23,42 @@ checkUsernameAndEmail = (req, res, next) => {
         }
       }).then(user => {
         if (user) {
-          res.status(400).send({
+          return res.status(400).send({
             message: "Failed! Email is already in use!"
           });
-          return;
         }
       });
     } else {
-      res.status(400).send({
+      return res.status(400).send({
         message: "Email address is required!"
       });
-      return;
     }
     if (!req.query.password) {
-      res.statue(400).send({
+      return res.statue(400).send({
         message: "Password is required!"
       });
-      return;
     }
-    next();
+    return next();
   });
 };
 
-checkRolesExisted = (req, res, next) => {
+checkRolesExist = (req, res, next) => {
   if (req.query.roles) {
     for (let i = 0; i < req.query.roles.length; i++) {
       if (!ROLES.includes(req.query.roles[i])) {
-        res.status(400).send({
+        return res.status(400).send({
           message: "Failed! Role does not exist = " + req.query.roles[i]
         });
-        return;
       }
     }
   }
   
-  next();
+  return next();
 };
 
 const verifySignUp = {
   checkUsernameAndEmail,
-  checkRolesExisted: checkRolesExisted
+  checkRolesExist
 };
 
 module.exports = verifySignUp;
