@@ -1,4 +1,4 @@
-const { authJwt } = require("../middleware");
+const { authJwt, verifySignUp } = require("../middleware");
 const controller = require("../controllers/user.controller");
 
 module.exports = function(app) {
@@ -34,4 +34,20 @@ module.exports = function(app) {
     authJwt.isAdminOrCurrentUser,
     controller.deleteUser
   );
+
+  // modify user roles - requires admin privleges and can't be done for root
+  app.put(
+    "/roles",
+    authJwt.verifyToken,
+    authJwt.isAdmin,
+    verifySignUp.checkRolesExist,
+    controller.modifyRoles
+  )
+
+  // list user roles - requires admin privleges if user name provided
+  app.get(
+    "/roles",
+    authJwt.verifyToken,
+    controller.listRoles
+  )
 };

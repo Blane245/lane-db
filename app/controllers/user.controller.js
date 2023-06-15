@@ -2,7 +2,9 @@ const fs = require("fs");
 const path = require("path");
 const db = require("../models")
 const User = db.user;
+const Role = db.role;
 var bcrypt = require("bcryptjs");
+const Op = db.Sequelize.Op;
 
 // list all users
 exports.listUsers = async (req, res) => {
@@ -82,3 +84,125 @@ exports.deleteUser = async (req, res) => {
 	}
 
 };
+
+exports.modifyRoles = async (req, res, next) => {
+
+	try 
+	{
+		// get the user name and the new roles
+		const userName = req.query.username;
+		const roleNames = req.query.roles;
+
+		// check that the user is defined, not root, and exists
+		if (userName) {
+			if (userName != "root") {
+
+				const user = await User.findOne({where: {username: userName}});
+				if (!user) {
+					return res.status(403).send("User "+ userName+ " does not exist!");
+				}
+
+				// change the links between the user and roles
+				if (req.query.roles) {
+					const roles = await Role.findAll({
+						where: {
+						name: {
+							[Op.or]: roleNames,
+						},
+						},
+					});
+					const result = await user.setRoles(roles)
+					if (result) {
+						return res.status(200).send("User "+ userName+ " roles have been updated");
+					} else {
+						return res.status(500).send("User "+ userName+ " roles NOT updated!");
+					}
+				} else {
+						return res.status(403).send("No new roles provided!");
+				}
+			
+			} else {
+				return res.status(403).send("Roles for the root user cannot be changed!");
+			}
+
+		} else {
+			return res.status(403). send("The user name was not provided!");
+			
+		}
+	} catch (err) {
+		res.status(500).send(err.message);
+	}
+}
+
+exports.listRoles = async (req, res, next) => {
+	try {
+
+		// get the user name
+		const userName = req.query.username;
+
+		// if the user name is provided, the current user must have admin privleges and the user must exist
+		if (userName) {
+			if (await isAdmin (req.session.user, res)) {
+				const user = await User.findOne({where: {username: userName}});
+				if (!user) {
+					return res.status(403).send("User "+ userName+ " does not exist!");
+				} else {
+					const authorities = [];
+					const roles = await user.getRoles();
+					for (let i = 0; i < roles.length; i++) {
+					  authorities.push("ROLE_" + roles[i].name.toUpperCase());
+					}
+				
+					return res.status(200).send({
+					  username: user.username,
+					  roles: authorities,
+					});
+				}
+			} else {
+				return res.status(403). send("Admin privleges required!");
+			}
+
+		} else {
+
+			// list the current users roles
+			const user = await User.findByPk(req.session.user);
+			if (!user) {
+				return res.status(500).send("Error accessing user "+ userName+ "!");
+			} else {
+				const authorities = [];
+				const roles = await user.getRoles();
+				for (let i = 0; i < roles.length; i++) {
+				  authorities.push("ROLE_" + roles[i].name.toUpperCase());
+				}
+			
+				return res.status(200).send({
+				  username: user.username,
+				  roles: authorities,
+				});
+			}
+	}
+
+	} catch (err) {
+		res.status(500).send(err.message);
+	}
+
+}
+async function isAdmin (userId, res) {
+	try {
+	  const user = await User.findByPk(userId);
+	  const roles = await user.getRoles();
+  
+	  for (let i = 0; i < roles.length; i++) {
+		if (roles[i].name === "admin") {
+		  return true;
+		}
+	  }
+  
+	  return false;
+	} catch (error) {
+	  res.status(500).send({
+		message: "Unable to validate User role!",
+	  });
+	}
+  };
+  
