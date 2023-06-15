@@ -59,30 +59,23 @@ exports.deleteUser = async (req, res) => {
 			}
 
 			const userName = req.query.username;
-			// first remove all of the user records
-			const user = await User.findOne({where: {username: userName}});
-			const roles = await user.getRoles();
 
-		
-			User.findOne ({where: {username:userName}}).then(user => {
-				user.getRoles
-			})
-			// remove the user record
-			User.destroy({where: {username:req.query.username}}).then((rowDeleted) => {
-				if (rowDeleted != 1) 
-					return res.status(500).send("Error while delete users. Number of rows delete is " + rowDeleted);
-				else {
-
-					// remove all of the users_roles records
-					const roles = user
-					Users_Roles.destroy({where: {username:req.query.username}}).then((rowDeleted) => {
+			// remove the user and the role link records
+			User.findOne ({where: {username: userName}}).then(async (user) => {
+				if (user) {
+					await user.destroy();
+					let msg = "User " + userName + " has been deleted";
+					if (req.session.user != 1) { 
 						req.session = null;
-						return res.status(200).send("User " + req.query.username + " deleted and signed out!");
-					});
+						msg+= " and signed out";
+					}
+					return res.status(200).send(msg + "!");
+				} else {
+					return res.status(403).send("User "+ userName+ " does not exist and cannot be deleted!");
 				}
 			});
 		} else {
-			return res.status(403).send("User name to delete needs to be provided.");
+			return res.status(403). send("The user to be deleted name was not provided");
 		}
 	} catch (err) {
 		res.status(500).send(err.message);
