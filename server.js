@@ -25,6 +25,8 @@ app.use(cookieSession ({
 // routes
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
+require("./app/routes/activitylist.routes")(app);
+//require("./app/routes/activity.routes")(app);
 
 // set up the listener
 const port = process.env.PORT;

@@ -3,10 +3,10 @@ module.exports = (sequelize, Sequelize) => {
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
-      primaryKey: true
+      primaryKey: true,
   },
   owner: {
-      type: Sequelize.STRING
+      type: Sequelize.INTEGER, // the id of the user ownning this activity list
     },
   });
 

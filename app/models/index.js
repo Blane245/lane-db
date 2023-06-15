@@ -26,6 +26,7 @@ db.sequelize = sequelize;
 db.user = require("./user.model.js")(sequelize, Sequelize);
 db.role = require("./role.model.js")(sequelize, Sequelize);
 db.activitylist = require("./activitylist.model.js")(sequelize, Sequelize);
+db.activity = require("./activity.model.js")(sequelize, Sequelize);
 
 // build the manay to many relationship between users and roles
 db.role.belongsToMany(db.user, {
@@ -33,6 +34,9 @@ db.role.belongsToMany(db.user, {
 });
 db.user.belongsToMany(db.role, {
   through: "users_roles"
+});
+db.activity.belongsTo(db.activitylist, {
+  through: "list_activities"
 });
 
 db.ROLES = ["user", "admin", "moderator"];
