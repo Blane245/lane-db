@@ -29,13 +29,15 @@ exports.modifyUser = (req, res) => {
 	const newEmail = req.query.email;
 	try 
 	{
-		User.findByPk(req.userId)
+		User.findByPk(req.session.userId)
 			.then((user) => {
 				if (user) {
 					user.update({
 						password: (newPassword)? bcrypt.hashSync(newPassword, 8): user.password,
 						email: (newEmail)? newEmail: user.email
 					});
+				} else {
+					return res.status(500).send("Error finding user record for user number " + req.session.userId.toString());
 				}
 			});
 		return res.status(200).send("User password and/or email modified");
@@ -145,7 +147,7 @@ exports.listRoles = async (req, res, next) => {
 			if (await isAdmin (req.session.user, res)) {
 				const user = await User.findOne({where: {username: userName}});
 				if (!user) {
-					return res.status(403).send("User "+ userName+ " does not exist!");
+					return res.status(400).send("User '"+ userName+ "' does not exist!");
 				} else {
 					const authorities = [];
 					const roles = await user.getRoles();
@@ -159,7 +161,7 @@ exports.listRoles = async (req, res, next) => {
 					});
 				}
 			} else {
-				return res.status(403). send("Admin privleges required!");
+				return res.status(403). send("This requires Admin privleges!");
 			}
 
 		} else {

@@ -23,7 +23,6 @@ module.exports = function(app) {
   app.put(
     "/users",
     authJwt.verifyToken,
-    authJwt.isCurrentUser,
     controller.modifyUser
   )
 

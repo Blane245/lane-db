@@ -18,22 +18,9 @@ exports.signup = async (req, res) => {
       password: bcrypt.hashSync(req.query.password, 8),
     });
 
-    if (req.query.roles) {
-      const roles = await Role.findAll({
-        where: {
-          name: {
-            [Op.or]: req.query.roles,
-          },
-        },
-      });
-
-      const result = user.setRoles(roles);
-      if (result) res.send({ message: "User registered successfully!" });
-    } else {
-      // user has role = 1
+      // user role assigned to new users
       const result = user.setRoles([1]);
-      if (result) res.send({ message: "User registered successfully!" });
-    }
+      if (result) res.status(200).send("User registered successfully!");
   } catch (error) {
     res.status(500).send({ message: error.message });
   }
@@ -42,6 +29,7 @@ exports.signup = async (req, res) => {
 exports.signin = async (req, res) => {
   try {
 
+    // find the user record
     const user = await User.findOne({
       where: {
         username: req.query.username,
@@ -49,20 +37,14 @@ exports.signin = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(404).send({ message: "User Not found." });
+      return res.status(400).send("User '"+req.query.username+"' not found.");
     }
 
-    const passwordIsValid = bcrypt.compareSync(
-      req.query.password,
-      user.password
-    );
+    // validate the password
+    if (!bcrypt.compareSync(req.query.password, user.password))
+      return res.status(400).send("Invalid Password!");
 
-    if (!passwordIsValid) {
-      return res.status(401).send({
-        message: "Invalid Password!",
-      });
-    }
-
+    // get the user toke and register it and the userId in the session
     const token = jwt.sign({ id: user.id },
                            config.secret,
                            {
@@ -71,19 +53,13 @@ exports.signin = async (req, res) => {
                             expiresIn: 86400, // 24 hours
                            });
 
-    let authorities = [];
-    const roles = await user.getRoles();
-    for (let i = 0; i < roles.length; i++) {
-      authorities.push("ROLE_" + roles[i].name.toUpperCase());
-    }
-
     req.session.token = token;
-    req.session.user = user.id;
-    req.session.activitiesListed = false; 
+    req.session.userId = user.id;
 
     return res.status(200).send("User '"+user.username+"' signed in.");
+
   } catch (error) {
-    return res.status(500).send({ message: error.message });
+    return res.status(500).send(error.message);
   }
 };
 

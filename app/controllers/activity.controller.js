@@ -6,13 +6,13 @@ var Op = db.Sequelize.Op;
 //TODO implement activity maintenance
 
 
-// user may list activities on their list in priority order. [GET /activities?status=[statuslist]]
+// user may list activities on their list in priority order. [GET /activities?statuses=[statuslist]]
 exports.get = async (req, res, next) => {
     try {
 
         // get the status array parameter
         let statuses = db.ACTIVITYSTATUSES;
-        const statusList = req.query.status;
+        const statusList = req.query.statuses;
         if (statusList) {
             statuses = []
             if (Array.isArray(statusList)) {
@@ -21,7 +21,7 @@ exports.get = async (req, res, next) => {
                     if (isValidStatus(status)) {
                         statuses.push(status);
                     } else {
-                        return res.status(403).send("'"+ status + "' is not a valid status for an activity!");
+                        return res.status(400).send("'"+ status + "' is not a valid status for an activity!");
                     }
                 };
             } else {
@@ -34,7 +34,7 @@ exports.get = async (req, res, next) => {
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(200).send("You must add an activity list first!");
+            return res.status(400).send("You must add an activity list first!");
         }
 
         // update the session to indicate that a list has been provided
@@ -63,7 +63,7 @@ exports.delete = async (req, res, next) => {
         userId = req.session.user;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(403).send("You must add an activity list first!");
+            return res.status(400).send("You do not have any activities");
         }
 
         // delete the activity record or all of the activity records
@@ -82,7 +82,7 @@ exports.delete = async (req, res, next) => {
                     }
 
             });
-            return res.status(200).send("All activities has been deleted.");
+            return res.status(200).send("All activities have been deleted.");
         }
     } catch (error) {
         return res.status(500).send({ message: error.message });
@@ -106,13 +106,14 @@ exports.post = async (req, res) => {
             return res.status(403).send("You must add an activity list first");
         }
 
-        // create an activity record
-        const activity = await Activity.create({description:description, priority:priorty, status: db.ACTIVITYSTATUSES[0]})
+        // create an todo activity record
+        const status = db.ACTIVITYSTATUSES[0];
+        const activity = await Activity.create({description:description, priority:priorty, status: status})
 
         // add it to the activity list
         await activityHeader.addToDos (activity.id);
         return res.status(200).send(
-            "A new activity has been added with priority "+priorty.toString()+" status '"+activity.status + "'" );
+            {description: description, priority: priority, status: status} );
     } catch (error) {
         return res.status(500).send({ message: error.message });
     }

@@ -7,16 +7,12 @@ verifyToken = (req, res, next) => {
   let token = req.session.token;
 
   if (!token) {
-    return res.status(403).send({
-      message: "No token provided!"
-    });
+    return res.status(401).send("You are not signed on!");
   }
 
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
-      return res.status(401).send({
-        message: "Unauthorized!"
-      });
+      return res.status(401).send("Your session has expired. Sign in again!");
     }
     req.userId = decoded.id;
     return next();
@@ -34,13 +30,9 @@ isAdmin = async (req, res, next) => {
       }
     }
 
-    return res.status(403).send({
-      message: "Requires Admin Role!",
-    });
+    return res.status(403).send("This requires Admin Role!");
   } catch (error) {
-    res.status(500).send({
-      message: "Unable to validate User role!",
-    });
+    res.status(500).send(error.maessage);
   }
 };
 
@@ -60,7 +52,7 @@ isModerator = async (req, res, next) => {
     });
   } catch (error) {
     res.status(500).send({
-      message: "Unable to validate Moderator role!",
+      message: error.message,
     });
   }
 };
@@ -110,16 +102,14 @@ isAdminOrCurrentUser = async (req,res, next) => {
       });
 
       if (reqUser.id != req.userId) {
-        return res.status(403).send({
-          message: "You can only delete yourself unless you are an admin!",
-        });
+        return res.status(403).send("You can only delete yourself unless you are an admin!");
       }
     } 
     return next();
 
   } catch (error) {
     res.status(500).send({
-      message: "Unable to validate Moderator or Admin role!",
+      message: error.message,
     });
   }
 };
