@@ -6,6 +6,8 @@ module.exports = (sequelize, Sequelize) => {
       primaryKey: true,
   },
   description: Sequelize.STRING, // the description of this activity
+  priority: Sequelize.INTEGER, 
+  status: Sequelize.STRING, // TODO, INPROGRESS, COMPLETE
   // many attributes to follow
   });
 

@@ -28,16 +28,20 @@ db.role = require("./role.model.js")(sequelize, Sequelize);
 db.activitylist = require("./activitylist.model.js")(sequelize, Sequelize);
 db.activity = require("./activity.model.js")(sequelize, Sequelize);
 
-// build the manay to many relationship between users and roles
+// build the relationships models
 db.role.belongsToMany(db.user, {
   through: "users_roles"
 });
 db.user.belongsToMany(db.role, {
   through: "users_roles"
 });
-db.activity.belongsTo(db.activitylist, {
-  through: "list_activities"
+db.activitylist.hasMany(db.activity, {
+  as: "ToDos"
 });
+db.activitylist.belongsTo(db.user, {
+  through: "users_list"
+})
 
 db.ROLES = ["user", "admin", "moderator"];
+db.ACTIVITYSTATUSES = ["todo", "inprogress", "done"]
 module.exports = db;

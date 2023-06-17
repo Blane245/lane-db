@@ -79,13 +79,9 @@ exports.signin = async (req, res) => {
 
     req.session.token = token;
     req.session.user = user.id;
+    req.session.activitiesListed = false; 
 
-    return res.status(200).send({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      roles: authorities,
-    });
+    return res.status(200).send("User '"+user.username+"' signed in.");
   } catch (error) {
     return res.status(500).send({ message: error.message });
   }
