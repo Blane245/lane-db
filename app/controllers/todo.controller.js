@@ -1,6 +1,6 @@
 const db = require("../models");
 const ActivityList = db.activitylist;
-const Activity = db.activity;
+const ToDo = db.todo;
 var Op = db.Sequelize.Op;
 
 //TODO implement activity maintenance
@@ -21,7 +21,7 @@ exports.get = async (req, res, next) => {
                     if (isValidStatus(status)) {
                         statuses.push(status);
                     } else {
-                        return res.status(400).send("'"+ status + "' is not a valid status for an activity!");
+                        return res.status(400).send("'"+ status + "' is not a valid status for an to do!");
                     }
                 };
             } else {
@@ -44,16 +44,16 @@ exports.get = async (req, res, next) => {
         const list = await activityHeader.getToDos(
             {where: {"status": {[Op.in]: statuses} }},
             {order: {"priority": "ASC"}});
-        return res.status(200).send({list:list, message:"Your activity list for (" + statuses.toString() + ")"});
+        return res.status(200).send({list:list, message:"Your to do list for (" + statuses.toString() + ")"});
 
     } catch (error) {
-        return res.status(500).send({ message: error.message });
+        return res.status(500).send(error.message);
     }
     
 }
 
-// user may delete all activities on an activity list [DELETE /actvities ]
-// user may delete an activity with a specific description. [/activities?description=description DELETE]
+// user may delete all to dos on an activity list [DELETE /todo ]
+// user may delete a to do with a specific description. [/todo?description=description DELETE]
 exports.delete = async (req, res, next) => {
 
     try {
@@ -66,30 +66,30 @@ exports.delete = async (req, res, next) => {
             return res.status(400).send("You do not have any activities");
         }
 
-        // delete the activity record or all of the activity records
+        // delete the todo record or all of the todo records
         if (description) {
-            await Activity.destroy ({
+            await ToDo.destroy ({
                 where:
                     {description: description,
                         activitylistId: activityHeader.id
                     }
             });
-            return res.status(200).send("The activity with description'"+description+"' either did not exist or has been deleted.");
-        } else { // delete all activity for the user
-            await Activity.destroy ({
+            return res.status(200).send("The to do with description'"+description+"' either did not exist or has been deleted.");
+        } else { // delete all to dos for the user
+            await ToDo.destroy ({
                 where:
                     {activitylistId: activityHeader.id
                     }
 
             });
-            return res.status(200).send("All activities have been deleted.");
+            return res.status(200).send("All to dos have been deleted.");
         }
     } catch (error) {
-        return res.status(500).send({ message: error.message });
+        return res.status(500).send(error.message);
     }
 }
 
-// user may add an activity [/activities POST parameters: description, /priority=1/, others as this evolves]
+// user may add to do [/todo POST parameters: description, /priority=1/]
 exports.post = async (req, res) => {
     try {
         const description = req.query.description;
@@ -106,20 +106,20 @@ exports.post = async (req, res) => {
             return res.status(400).send("You must add an activity list first");
         }
 
-        // create an todo activity record
-        const status = db.ACTIVITYSTATUSES[0];
-        const activity = await Activity.create({description:description, priority:priorty, status: status})
+        // create an todo record
+        const status = db.TODOSTATUSES[0];
+        const todo = await ToDo.create({description:description, priority:priorty, status: status})
 
         // add it to the activity list
-        await activityHeader.addToDos (activity.id);
+        await activityHeader.addToDos (todo.id);
         return res.status(200).send(
             {description: description, priority: priority, status: status} );
     } catch (error) {
-        return res.status(500).send({ message: error.message });
+        return res.status(500).send(error.message);
     }
 }
 
-// user may change the status or priority of an activity [/activities PUT parameters: description, /priority/, /status/ ]
+// user may change the status or priority of a todo [/todo PUT parameters: description, /priority/, /status/ ]
 //TODO a bit error prone on processing optional parameters
 exports.put = async (req, res) => {
     try {
@@ -129,45 +129,45 @@ exports.put = async (req, res) => {
             return res.status(400).send("Priority number be a number!");
         const status = req.query.status;
         if (status && !isValidStatus(status))
-            return res.status(400).send("'"+ status + "' is not a valid status for an activity!");
+            return res.status(400).send("'"+ status + "' is not a valid status for a to do!");
         const description = req.query.description;
 
 
-        let newActivity = {};
+        let newToDo = {};
         if (!isNaN(priority)) 
-            newActivity.priority = priority;
+            newToDo.priority = priority;
         if (status)
-            newActivity.status = status;
-        if (newActivity == {})
-            return res.status(400).send("You must provide a status or priority for the activity!");
+            newToDo.status = status;
+        if (newToDo == {})
+            return res.status(400).send("You must provide a status or priority for the to do!");
 
 
         // find the user's activity list and then update the description
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(403).send("You must add an activity list first!");
+            return res.status(400).send("You must add an activity list first!");
         } 
-        const activity = await Activity.findOne({where:
+        const todo = await ToDo.findOne({where:
             {
                 description: description,
                 activitylistId: activityHeader.id
                 
             }});
-        if (activity) {
-            await activity.set(newActivity);
+        if (todo) {
+            await todo.set(newToDo);
             return res.status(200).send({description: description, priority: priority, status: status});
         } else {
-            return res.status(400).send("The activity with description '"+description+"' does not exist!");
+            return res.status(400).send("The to do with description '"+description+"' does not exist!");
         }
     } catch (error) {
-        return res.status(500).send({ message: error.message });
+        return res.status(500).send(error.message);
     }
 }
-// helper function to check that an activity status is valid
+// helper function to check that an todo status is valid
 function isValidStatus (status) {
 
-    for (const validStatus of db.ACTIVITYSTATUSES) {
+    for (const validStatus of db.TODOSTATUSES) {
         if (status == validStatus)
             return  true;
     };

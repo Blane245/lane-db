@@ -51,9 +51,7 @@ isModerator = async (req, res, next) => {
       message: "Requires Moderator Role!",
     });
   } catch (error) {
-    res.status(500).send({
-      message: error.message,
-    });
+    res.status(500).send(error.message);
   }
 };
 
@@ -108,9 +106,7 @@ isAdminOrCurrentUser = async (req,res, next) => {
     return next();
 
   } catch (error) {
-    res.status(500).send({
-      message: error.message,
-    });
+    res.status(500).send(error.message);
   }
 };
 

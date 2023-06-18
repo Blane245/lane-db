@@ -1,5 +1,5 @@
 module.exports = (sequelize, Sequelize) => {
-  const Activity = sequelize.define("activities", {
+  const ToDo = sequelize.define("todos", {
     id: {
       type: Sequelize.INTEGER,
       autoIncrement: true,
@@ -7,9 +7,8 @@ module.exports = (sequelize, Sequelize) => {
   },
   description: Sequelize.STRING, // the description of this activity
   priority: Sequelize.INTEGER, 
-  status: Sequelize.STRING, // TODO, INPROGRESS, COMPLETE
-  // many attributes to follow
+  status: Sequelize.STRING, // one of db.TODOSTATUSES
   });
 
-  return Activity;
+  return ToDo;
 };

@@ -22,7 +22,7 @@ exports.signup = async (req, res) => {
       const result = user.setRoles([1]);
       if (result) res.status(200).send("User registered successfully!");
   } catch (error) {
-    res.status(500).send({ message: error.message });
+    res.status(500).send(error.message);
   }
 };
 

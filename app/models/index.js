@@ -26,22 +26,28 @@ db.sequelize = sequelize;
 db.user = require("./user.model.js")(sequelize, Sequelize);
 db.role = require("./role.model.js")(sequelize, Sequelize);
 db.activitylist = require("./activitylist.model.js")(sequelize, Sequelize);
-db.activity = require("./activity.model.js")(sequelize, Sequelize);
+db.todo = require("./todo.model.js")(sequelize, Sequelize);
 
 // build the relationships models
+
+// users and roles are mant-to-many
 db.role.belongsToMany(db.user, {
   through: "users_roles"
 });
 db.user.belongsToMany(db.role, {
   through: "users_roles"
 });
-db.activitylist.hasMany(db.activity, {
-  as: "ToDos"
-});
+
+// only one activity list allowed per user
 db.activitylist.belongsTo(db.user, {
-  through: "users_list"
+  through: "user_activity"
 })
 
+// many todos for an activity list
+db.activitylist.hasMany(db.todo, {
+  as: "activity_todos"
+});
+
 db.ROLES = ["user", "admin", "moderator"];
-db.ACTIVITYSTATUSES = ["todo", "inprogress", "done"]
+db.TODOSTATUSES = ["todo", "inprogress", "done"]
 module.exports = db;

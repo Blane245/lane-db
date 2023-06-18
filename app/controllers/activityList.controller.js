@@ -28,7 +28,7 @@ exports.create = async (req, res) => {
         }
 
     } catch (error) {
-        return res.status(500).send({ message: error.message });
+        return res.status(500).send(error.message);
     }
     
 }
@@ -50,7 +50,7 @@ exports.delete = async (req, res) => {
         }
 
     } catch (error) {
-        return res.status(500).send({ message: error.message });
+        return res.status(500).send(error.message);
     }
         
 }

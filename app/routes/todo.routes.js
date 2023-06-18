@@ -1,5 +1,5 @@
 const { authJwt, verifySignUp } = require("../middleware");
-const controller = require("../controllers/activity.controller");
+const controller = require("../controllers/todo.controller");
 
 module.exports = function(app) {
   app.use(function(req, res, next) {
@@ -11,28 +11,28 @@ module.exports = function(app) {
   });
 
   // list activities
-  app.get("/activity", 
+  app.get("/todo", 
     authJwt.verifyToken, 
     controller.get
   );
 
   // delete activitites
   app.delete(
-    "/activity",
+    "/todo",
     authJwt.verifyToken,
     controller.delete
   );
 
   // add activitites
   app.post(
-    "/activity",
+    "/todo",
     authJwt.verifyToken,
     controller.post
   );
 
   // modify activitites
   app.put(
-    "/activity",
+    "/todo",
     authJwt.verifyToken,
     controller.put
   );
