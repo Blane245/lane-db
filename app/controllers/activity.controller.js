@@ -96,14 +96,14 @@ exports.post = async (req, res) => {
         const priorty = req.query.priority? req.query.priority: 1;
         const priority = Number.parseInt(req.query.priority);
         if (req.query.priority && isNaN(priority)) 
-            return res.status(403).send("Priority number be a number!");
+            return res.status(400).send("Priority number be a number!");
 
         // get the activity list record for the user
         userId = req.session.user;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(403).send("You must add an activity list first");
+            return res.status(400).send("You must add an activity list first");
         }
 
         // create an todo activity record
@@ -126,10 +126,10 @@ exports.put = async (req, res) => {
 
         const priority = Number.parseInt(req.query.priority);
         if (req.query.priority && isNaN(priority)) 
-            return res.status(403).send("Priority number be a number!");
+            return res.status(400).send("Priority number be a number!");
         const status = req.query.status;
         if (status && !isValidStatus(status))
-            return res.status(403).send("'"+ status + "' is not a valid status for an activity!");
+            return res.status(400).send("'"+ status + "' is not a valid status for an activity!");
         const description = req.query.description;
 
 
@@ -139,7 +139,7 @@ exports.put = async (req, res) => {
         if (status)
             newActivity.status = status;
         if (newActivity == {})
-            return res.status(403).send("You must provide a new status or priority for the activity!");
+            return res.status(400).send("You must provide a status or priority for the activity!");
 
 
         // find the user's activity list and then update the description
@@ -158,7 +158,7 @@ exports.put = async (req, res) => {
             await activity.set(newActivity);
             return res.status(200).send({description: description, priority: priority, status: status});
         } else {
-            return res.status(403).send("The activity with description '"+description+"' does not exist!");
+            return res.status(400).send("The activity with description '"+description+"' does not exist!");
         }
     } catch (error) {
         return res.status(500).send({ message: error.message });
