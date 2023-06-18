@@ -1,3 +1,4 @@
+//TODO ready to move to production with version 0.0.1
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
