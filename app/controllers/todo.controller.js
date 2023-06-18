@@ -11,8 +11,8 @@ exports.get = async (req, res, next) => {
     try {
 
         // get the status array parameter
-        let statuses = db.ACTIVITYSTATUSES;
-        const statusList = req.query.statuses;
+        let statuses = [];
+        const statusList = req.query.status;
         if (statusList) {
             statuses = []
             if (Array.isArray(statusList)) {
@@ -27,7 +27,9 @@ exports.get = async (req, res, next) => {
             } else {
                 statuses.push(statusList);
             }
-        } 
+        } else
+            statuses = db.TODOSTATUSES;
+ 
 
         // get the activity list record for the user
         userId = req.session.user;
@@ -41,7 +43,7 @@ exports.get = async (req, res, next) => {
         req.session.activitiesListed = true;
 
         // get the list of activities for the identified statuses
-        const list = await activityHeader.getToDos(
+        const list = await activityHeader.getActivity_todos(
             {where: {"status": {[Op.in]: statuses} }},
             {order: {"priority": "ASC"}});
         return res.status(200).send({list:list, message:"Your to do list for (" + statuses.toString() + ")"});
@@ -111,7 +113,7 @@ exports.post = async (req, res) => {
         const todo = await ToDo.create({description:description, priority:priorty, status: status})
 
         // add it to the activity list
-        await activityHeader.addToDos (todo.id);
+        await activityHeader.addActivity_todos (todo.id);
         return res.status(200).send(
             {description: description, priority: priority, status: status} );
     } catch (error) {
@@ -132,34 +134,34 @@ exports.put = async (req, res) => {
             return res.status(400).send("'"+ status + "' is not a valid status for a to do!");
         const description = req.query.description;
 
-
-        let newToDo = {};
-        if (!isNaN(priority)) 
-            newToDo.priority = priority;
-        if (status)
-            newToDo.status = status;
-        if (newToDo == {})
-            return res.status(400).send("You must provide a status or priority for the to do!");
-
-
         // find the user's activity list and then update the description
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
             return res.status(400).send("You must add an activity list first!");
         } 
+
+        // get the existing todo record
         const todo = await ToDo.findOne({where:
             {
                 description: description,
                 activitylistId: activityHeader.id
                 
             }});
-        if (todo) {
-            await todo.set(newToDo);
-            return res.status(200).send({description: description, priority: priority, status: status});
-        } else {
+        if (!todo) 
             return res.status(400).send("The to do with description '"+description+"' does not exist!");
-        }
+
+        // construct the new todo record
+        let newToDo = {description: todo.description};
+        if (isNaN(priority)) 
+        newToDo.priority = isNaN(priority)? priority: todo.priority;
+        if (status)
+        newToDo.status = status? status: todo.status;
+
+        // update the todo record with the new data
+        await todo.set(newToDo);
+        return res.status(200).send({description: description, priority: priority, status: status});
+
     } catch (error) {
         return res.status(500).send(error.message);
     }
