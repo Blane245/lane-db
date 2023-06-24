@@ -28,35 +28,39 @@ exports.signup = async (req, res) => {
 
 exports.signin = async (req, res) => {
   try {
+    userName =req.query.username;
+    if (userName) {
+      // find the user record
+      const user = await User.findOne({
+        where: {
+          username: req.query.username,
+        },
+      });
 
-    // find the user record
-    const user = await User.findOne({
-      where: {
-        username: req.query.username,
-      },
-    });
+      if (!user) {
+        return res.status(400).send("User '"+req.query.username+"' not found.");
+      }
 
-    if (!user) {
-      return res.status(400).send("User '"+req.query.username+"' not found.");
+      // validate the password
+      if (!bcrypt.compareSync(req.query.password, user.password))
+        return res.status(400).send("Invalid Password!");
+
+      // get the user toke and register it and the userId in the session
+      const token = jwt.sign({ id: user.id },
+                            config.secret,
+                            {
+                              algorithm: 'HS256',
+                              allowInsecureKeySizes: true,
+                              expiresIn: 86400, // 24 hours
+                            });
+
+      req.session.token = token;
+      req.session.userId = user.id;
+
+      return res.status(200).send("User '"+user.username+"' signed in.");
+    } else {
+        return res.status(403).send("username not provided.");
     }
-
-    // validate the password
-    if (!bcrypt.compareSync(req.query.password, user.password))
-      return res.status(400).send("Invalid Password!");
-
-    // get the user toke and register it and the userId in the session
-    const token = jwt.sign({ id: user.id },
-                           config.secret,
-                           {
-                            algorithm: 'HS256',
-                            allowInsecureKeySizes: true,
-                            expiresIn: 86400, // 24 hours
-                           });
-
-    req.session.token = token;
-    req.session.userId = user.id;
-
-    return res.status(200).send("User '"+user.username+"' signed in.");
 
   } catch (error) {
     return res.status(500).send(error.message);
