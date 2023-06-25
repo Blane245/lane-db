@@ -7,12 +7,12 @@ verifyToken = (req, res, next) => {
   let token = req.session.token;
 
   if (!token) {
-    return res.status(401).send("You are not signed on!");
+    return res.status(403).send("You are not signed on!");
   }
 
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
-      return res.status(401).send("Your session has expired. Sign in again!");
+      return res.status(403).send("Your session has expired. Sign in again!");
     }
     req.userId = decoded.id;
     return next();

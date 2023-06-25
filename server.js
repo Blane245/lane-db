@@ -19,12 +19,13 @@ app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession ({
-  name: "lanedb-session",
+  name: (env == "develpoment")?"lanedb-test-session":"lanedb-session",
   keys: ["COOKIE_SECRET"],
   httpOnly: true,
 }));
 
 // routes
+require("./app/routes/version.routes")(app);
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/activitylist.routes")(app);
@@ -33,7 +34,7 @@ require("./app/routes/todo.routes")(app);
 // set up the listener
 const port = process.env.PORT;
 app.listen(port, () => {
-  // console.log(`server is running on port ${port}.`);
+  console.log(`server is running on port ${port}.`);
 });
 
 // load the db models and sync

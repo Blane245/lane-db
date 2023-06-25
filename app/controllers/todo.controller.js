@@ -39,9 +39,6 @@ exports.get = async (req, res, next) => {
             return res.status(400).send("You must add an activity list first!");
         }
 
-        // update the session to indicate that a list has been provided
-        req.session.activitiesListed = true;
-
         // get the list of activities for the identified statuses
         const list = await activityHeader.getActivity_todos(
             {where: {"status": {[Op.in]: statuses} }},
@@ -94,14 +91,14 @@ exports.delete = async (req, res, next) => {
 // user may add to do [/todo POST parameters: description, /priority=1/]
 exports.post = async (req, res) => {
     try {
-        const description = req.query.description;
-        const priorty = req.query.priority? req.query.priority: 1;
-        const priority = Number.parseInt(req.query.priority);
-        if (req.query.priority && isNaN(priority)) 
+        const description = req.body.description;
+        const priorty = req.body.priority? req.body.priority: 1;
+        const priority = Number.parseInt(req.body.priority);
+        if (req.body.priority && isNaN(priority)) 
             return res.status(400).send("Priority number be a number!");
 
         // get the activity list record for the user
-        userId = req.session.user;
+        userId = req.session.userId;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
@@ -126,7 +123,7 @@ exports.post = async (req, res) => {
 exports.put = async (req, res) => {
     try {
 
-        const priority = Number.parseInt(req.query.priority);
+        let priority = Number.parseInt(req.query.priority);
         if (req.query.priority && isNaN(priority)) 
             return res.status(400).send("Priority number be a number!");
         const status = req.query.status;
@@ -153,7 +150,6 @@ exports.put = async (req, res) => {
 
         // construct the new todo record
         let newToDo = {description: todo.description};
-        if (isNaN(priority)) 
         newToDo.priority = isNaN(priority)? priority: todo.priority;
         if (status)
         newToDo.status = status? status: todo.status;

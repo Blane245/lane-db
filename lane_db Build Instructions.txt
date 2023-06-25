@@ -30,6 +30,7 @@ see https://ubuntu.com/server/docs/databases-mysql
 create lane_db from cli
 	mysql -u root -p
 	CREATE DATABASE lane_db
+	CREATE DATABASE lane_db_test
 
 open the ports in the firewall for RDP, mysql, sara-ai, cors
 

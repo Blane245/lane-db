@@ -17,7 +17,7 @@ exports.listUsers = async (req, res) => {
 		});
 		res.status(200).send(returnUsers);
 	} catch (error) {
-		res.status(500).send("Error while retrieving users.");
+		res.status(500).send(error.message);
 	}
 };
 
@@ -54,32 +54,31 @@ exports.deleteUser = async (req, res) => {
 
 	try 
 	{
+		const userName = req.query.username;
 		// handle the absence of a username in the query
-		if (req.query.username) {
+		if (userName) {
 
 			// root user cannot be deleted
-			if (req.query.username == "root") {
-				return res.status(403).send("Root user cannot be deleted!");
+			if (userName == "root") {
+				return res.status(400).send("Root user cannot be deleted!");
 			}
-
-			const userName = req.query.username;
 
 			// remove the user and the role link records
 			User.findOne ({where: {username: userName}}).then(async (user) => {
 				if (user) {
 					await user.destroy();
 					let msg = "User " + userName + " has been deleted";
-					if (req.session.user != 1) { 
+					if (req.session.userId != 1) { 
 						req.session = null;
 						msg+= " and signed out";
 					}
 					return res.status(200).send(msg + "!");
 				} else {
-					return res.status(403).send("User "+ userName+ " does not exist and cannot be deleted!");
+					return res.status(400).send("User '"+ userName+ "' does not exist and cannot be deleted!");
 				}
 			});
 		} else {
-			return res.status(403). send("The user to be deleted name was not provided");
+			return res.status(400). send("The user to be deleted name was not provided");
 		}
 	} catch (err) {
 		res.status(500).send(err.message);
@@ -101,7 +100,7 @@ exports.modifyRoles = async (req, res, next) => {
 
 				const user = await User.findOne({where: {username: userName}});
 				if (!user) {
-					return res.status(403).send("User "+ userName+ " does not exist!");
+					return res.status(400).send("User "+ userName+ " does not exist!");
 				}
 
 				// change the links between the user and roles
@@ -120,7 +119,7 @@ exports.modifyRoles = async (req, res, next) => {
 						return res.status(500).send("User "+ userName+ " roles NOT updated!");
 					}
 				} else {
-						return res.status(403).send("No new roles provided!");
+						return res.status(400).send("No new roles provided!");
 				}
 			
 			} else {
@@ -128,7 +127,7 @@ exports.modifyRoles = async (req, res, next) => {
 			}
 
 		} else {
-			return res.status(403). send("The user name was not provided!");
+			return res.status(400). send("The user name was not provided!");
 			
 		}
 	} catch (err) {
@@ -168,20 +167,17 @@ exports.listRoles = async (req, res, next) => {
 
 			// list the current users roles
 			const user = await User.findByPk(req.session.user);
-			if (!user) {
-				return res.status(500).send("Error accessing user "+ userName+ "!");
-			} else {
-				const authorities = [];
-				const roles = await user.getRoles();
-				for (let i = 0; i < roles.length; i++) {
-				  authorities.push("ROLE_" + roles[i].name.toUpperCase());
-				}
-			
-				return res.status(200).send({
-				  username: user.username,
-				  roles: authorities,
-				});
+
+			const authorities = [];
+			const roles = await user.getRoles();
+			for (let i = 0; i < roles.length; i++) {
+				authorities.push("ROLE_" + roles[i].name.toUpperCase());
 			}
+		
+			return res.status(200).send({
+				username: user.username,
+				roles: authorities,
+			});
 	}
 
 	} catch (err) {
