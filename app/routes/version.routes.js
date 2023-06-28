@@ -10,7 +10,7 @@ module.exports = function(app) {
   });
 
   // anyone can get the version number
-  app.get ("/version", 
+  app.get ("/api/version", 
     controller.getVersion
   );
 

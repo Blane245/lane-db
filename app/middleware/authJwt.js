@@ -47,9 +47,7 @@ isModerator = async (req, res, next) => {
       }
     }
 
-    return res.status(403).send({
-      message: "Requires Moderator Role!",
-    });
+    return res.status(403).send("Requires Moderator Role!");
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -66,13 +64,9 @@ isModeratorOrAdmin = async (req, res, next) => {
       }
     }
 
-    return res.status(403).send({
-      message: "Requires Moderator or Admin Role!",
-    });
+    return res.status(403).send("Requires Moderator or Admin Role!");
   } catch (error) {
-    res.status(500).send({
-      message: "Unable to validate Moderator or Admin role!",
-    });
+    res.status(500).send("Unable to validate Moderator or Admin role!");
   }
 };
 
@@ -99,7 +93,7 @@ isAdminOrCurrentUser = async (req,res, next) => {
         },
       });
 
-      if (reqUser.id != req.userId) {
+      if (reqUser.id != req.session.userId) {
         return res.status(403).send("You can only delete yourself unless you are an admin!");
       }
     } 

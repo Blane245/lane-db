@@ -143,7 +143,7 @@ exports.listRoles = async (req, res, next) => {
 
 		// if the user name is provided, the current user must have admin privleges and the user must exist
 		if (userName) {
-			if (await isAdmin (req.session.user, res)) {
+			if (await isAdmin (req.session.userId, res)) {
 				const user = await User.findOne({where: {username: userName}});
 				if (!user) {
 					return res.status(400).send("User '"+ userName+ "' does not exist!");
@@ -166,7 +166,7 @@ exports.listRoles = async (req, res, next) => {
 		} else {
 
 			// list the current users roles
-			const user = await User.findByPk(req.session.user);
+			const user = await User.findByPk(req.session.userId);
 
 			const authorities = [];
 			const roles = await user.getRoles();

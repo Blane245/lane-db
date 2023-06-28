@@ -19,7 +19,7 @@ checkUsernameAndEmail = async (req, res, next) => {
     }
 
     if (!email) {
-      return res.status(400).send("Failed! password is required!");
+      return res.status(400).send("Failed! email is required!");
     }
 
     // Unique Username
