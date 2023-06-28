@@ -11,7 +11,7 @@ module.exports = function(app) {
   });
 
   // only administrators can access this function
-  app.get ("/users", 
+  app.get ("/api/users", 
     authJwt.verifyToken, 
     authJwt.isAdmin,
     controller.listUsers
@@ -21,14 +21,14 @@ module.exports = function(app) {
 
   // the current user can modify email or password
   app.put(
-    "/users",
+    "/api/users",
     authJwt.verifyToken,
     controller.modifyUser
   )
 
   // the administrator or the current user only can delete user
   app.delete(
-    "/users",
+    "/api/users",
     authJwt.verifyToken,
     authJwt.isAdminOrCurrentUser,
     controller.deleteUser
@@ -36,7 +36,7 @@ module.exports = function(app) {
 
   // modify user roles - requires admin privleges and can't be done for root
   app.put(
-    "/roles",
+    "/api/roles",
     authJwt.verifyToken,
     authJwt.isAdmin,
     verifySignUp.checkRolesExist,
@@ -45,7 +45,7 @@ module.exports = function(app) {
 
   // list user roles - requires admin privleges if user name provided
   app.get(
-    "/roles",
+    "/api/roles",
     authJwt.verifyToken,
     controller.listRoles
   )

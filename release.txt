@@ -1,0 +1,9 @@
+Baby steps are being made...
+    BIG BABY - https is now enabled and required.
+    Production server is accessed via /api/
+    Test Server is accessed via /test/
+    Head nod to Ryan Lane for major assisstance
+    Major functional shifts
+    All POST must be sent via the 'body'. All other requests are via parameters
+    Request version number and description via the version endpoint
+    Many error traps for the users and auth/ endpoint have been added or repaired.

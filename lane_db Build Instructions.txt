@@ -33,6 +33,7 @@ see https://ubuntu.com/server/docs/databases-mysql
 create lane_db from cli
 	mysql -u root -p
 	CREATE DATABASE lane_db
+	CREATE DATABASE lane_db_test
 
 open the ports in the firewall for RDP, mysql, sara-ai, cors
 
@@ -40,6 +41,7 @@ sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 3389 -j ACCEPT
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 3306 -j ACCEPT
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8080 -j ACCEPT
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8081 -j ACCEPT
+sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 8082 -j ACCEPT
 sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 80 -j ACCEPT
 sudo netfilter-persistent save
 
@@ -47,3 +49,47 @@ net diagnostics
 	sudo apt install net-tools
 	things listening
 		sudo lsof -nP -iTCP -sTCP:LISTEN
+
+creating apiary
+
+
+creating a domain name 
+https://www.noip.com/login?ref_url=console 
+
+configuring for https:
+Serve your RESTful API with https!
+
+1) Install nginx.
+Replace any instances they use in these tutorials "example.com" or "your_domain" with "lanedb.hopto.org"
+How To Install Nginx on Ubuntu 20.04 | DigitalOcean
+
+2) Configure a root location block in your nginx sites-available directory to proxy the port you are using for your production server to the normal http port(80). You can change this root location block to a non-root (/api for example) if you want to serve more content in the future, but for now we want all web traffic to lanedb.hopto.org being directed to your server listening (on port 8081 I think?). The tutorial from step 1 should have you making this file already, but this is all yours needs to contain:
+
+sudo nano /etc/nginx/sites-available/lanedb.hopto.org
+
+server {
+  location / {
+    proxy_pass http://lanedb.hopto.org:8081/; 
+    proxy_set_header Host $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header Upgrade $http_upgrade;
+  }
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+    server_name lanedb.hopto.org;
+    listen  80 ;
+}
+
+And if you completed the tutorial from step 1 you should already have a symlink pointing from the above file to /etc/nginx/sites-enabled/lanedb.hopto.org
+
+3) Get your free SSL cert from Let's Encrypt by using the certbot command line tool. 
+How To Secure Nginx with Let's Encrypt on Ubuntu 20.04 | DigitalOcean
+
+At this point you should be able to send the same requests you've been using in postman to https://lanedb.hopto.org. If not, give me a shout and I'll take a look! You can read up more on nginx as far as allowing and denying certain hosts if you want to lock things down more. But for now, since you aren't running anything secured just yet, you won't get anything too malicious.
+
+p.s. I believe certbot will even set up a cron job to renew your cert for you automatically as long as you keep this VM active. So if you end up transferring just remember they do expire! They're easy to renew as long as you catch it in time. If you give them your email when you register they will send you a reminder email automatically if it doesn't auto-renew
+
+p.p.s the first place to look if something isn't working is at those logs you defined in the server block. 
+sudo tail -f /var/log/nginx/access.log
+sudo tail -f /var/log/nginx/error.log
+^watch this one for all of the 404 errors from bots trying to probe your server for vulnerabilities! 

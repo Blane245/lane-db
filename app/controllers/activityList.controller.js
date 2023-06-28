@@ -14,7 +14,7 @@ exports.create = async (req, res) => {
     try {
 
         // check if an activity list already exist for the user signed on
-        userId = req.session.user;
+        userId = req.session.userId;
         let list = await ActivityList.findOne({where: {owner: userId}});
 
         if (!list) { // an activity list can be created
@@ -33,13 +33,13 @@ exports.create = async (req, res) => {
     
 }
 
-// delete the user's activity list. This wil delete all linked activities
+// delete the user's activity list. This will delete all linked activities
 exports.delete = async (req, res) => {
 
     try {
 
         // check if an activity list exists for the user signed on
-        userId = req.session.user;
+        userId = req.session.userId;
         let list = await ActivityList.findOne({where: {owner: userId}});
 
         if (list) { // an activity list can be destroyed

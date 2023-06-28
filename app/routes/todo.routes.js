@@ -11,28 +11,28 @@ module.exports = function(app) {
   });
 
   // list activities
-  app.get("/todo", 
+  app.get("/api/todo", 
     authJwt.verifyToken, 
     controller.get
   );
 
   // delete activitites
   app.delete(
-    "/todo",
+    "/api/todo",
     authJwt.verifyToken,
     controller.delete
   );
 
   // add activitites
   app.post(
-    "/todo",
+    "/api/todo",
     authJwt.verifyToken,
     controller.post
   );
 
   // modify activitites
   app.put(
-    "/todo",
+    "/api/todo",
     authJwt.verifyToken,
     controller.put
   );

@@ -11,13 +11,13 @@ module.exports = function(app) {
   });
 
   // add an activity list
-  app.post("/activitylist", 
+  app.post("/api/activitylist", 
     authJwt.verifyToken, 
     controller.create
   );
 
   app.delete(
-    "/activitylist",
+    "/api/activitylist",
     authJwt.verifyToken,
     controller.delete
   );

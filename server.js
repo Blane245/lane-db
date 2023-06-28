@@ -1,4 +1,5 @@
 //TODO ready to move to production with version 0.0.1
+//TODO add roles to list user
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
@@ -9,7 +10,7 @@ require('dotenv').config();
 
 var corsOptions = { origin: "*"};
 
-const env = process.env.NODE_ENV || "development";
+var isDev = (process.env.NODE_ENV || "development" == "development")? true: false
 const app= express();
 app.use(cors(corsOptions));
 
@@ -18,12 +19,13 @@ app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession ({
-  name: "lanedb-session",
+  name: (isDev)?"lanedb-test-session":"lanedb-session",
   keys: ["COOKIE_SECRET"],
   httpOnly: true,
 }));
 
 // routes
+require("./app/routes/version.routes")(app);
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/activitylist.routes")(app);
@@ -32,18 +34,18 @@ require("./app/routes/todo.routes")(app);
 // set up the listener
 const port = process.env.PORT;
 app.listen(port, () => {
-  // console.log(`server is running on port ${port}.`);
+  console.log(`server is running on port ${port}.`);
 });
 
 // load the db models and sync
 
 const db = require("./app/models");
-const force = (env === "development")?true: false
+const force = (isDev)?true: false
 db.sequelize.sync ({ force: force }).then(() => {
   // console.log("connected to data base.");
 
   // create the default admin user and the roles
-  if (env === 'development')
+  if (isDev)
     initial(db);
 });
 
@@ -55,10 +57,10 @@ app.use(function(req, res, next) {
   
 // error handler
 app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  // console.log(err);
+
+  if (isDev) console.log(err);
   res.locals.message = err.message;
-  res.locals.error = req.app.get('env') === 'development' ? err : {};
+  res.locals.error = isDev ? err : {};
 
   // render the error page
   res.status(err.status || 500);

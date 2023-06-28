@@ -2,45 +2,53 @@ const db = require("../models");
 const ROLES = db.ROLES;
 const User = db.user;
 
-checkUsernameAndEmail = (req, res, next) => {
-  // Username
-  User.findOne({
-    where: {
-      username: req.query.username
-    }
-  }).then(user => {
-    if (user) {
-      return res.status(400).send({
-        message: "Failed! Username is already in use!"
-      });
+checkUsernameAndEmail = async (req, res, next) => {
+
+  // validate username and password and email
+  const userName = req.body.username;
+  const password = req.body.password;
+  const email = req.body.email;
+  try { 
+
+    if (!userName) {
+      return res.status(400).send("Failed! username is required!");
     }
 
-    // Email
-    if (req.query.email) {
-      User.findOne({
-        where: {
-          email: req.query.email
-        }
-      }).then(user => {
-        if (user) {
-          return res.status(400).send({
-            message: "Failed! Email is already in use!"
-          });
-        }
-      });
-    } else {
-      return res.status(400).send({
-        message: "Email address is required!"
-      });
+    if (!password) {
+      return res.status(400).send("Failed! password is required!");
     }
-    if (!req.query.password) {
-      return res.statue(400).send({
-        message: "Password is required!"
-      });
+
+    if (!email) {
+      return res.status(400).send("Failed! email is required!");
     }
+
+    // Unique Username
+    let user = await User.findOne({
+      where: {
+        username: req.body.username
+      }
+    });
+    if (user) {
+      return res.status(400).send("Failed! Username is already in use!");
+    }
+
+    // Unique Email
+    const user2 = await User.findOne({
+      where: {
+        email: req.body.email
+      }
+    });
+    if (user2) {
+      return res.status(400).send("Failed! Email is already in use!");
+    }
+      
+    // we're good
     return next();
-  });
-};
+
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+}
 
 checkRolesExist = (req, res, next) => {
   if (req.query.roles) {
