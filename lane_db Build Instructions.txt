@@ -4,6 +4,9 @@ Shape - Ampere VM.Standard.A1.Flex, 4 CPUs, 24GB RAM
 SSH keys - generate and save key pair
 boot volume - specify customer boot volumne size (150 GB) balanced, use in-transit encryption
 to install remote desktop on Oracle Cloud follow sudo https://fullstackcode.dev/2022/12/10/create-free-ubuntu-remote-desktop-on-oracle-cloud-part-i/#:~:text=Create%20Free%20Ubuntu%20Remote%20Desktop%20on%20Oracle%20Cloud,Remote%20Desktop%20...%205%20Create%20Swap%20File%20
+
+enable the ports used by lane-db and lane-db-test in the subnet - 8081 and 8082
+
 install the development environment 
 node.js
 	sudo apt update
