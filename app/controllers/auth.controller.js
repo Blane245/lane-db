@@ -24,9 +24,9 @@ exports.signup = async (req, res, next) => {
 
     // user role assigned to new users
     const result = user.setRoles([1]);
-    if (result) res.status(200).send("User registered successfully!");
+    if (result) res.status(200).send({msg: "User registered successfully!"});
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({msg: error.message});
   }
 }
 
@@ -51,12 +51,12 @@ exports.signin = [
         });
 
         if (!user) {
-          return res.status(400).send("User '"+userName+"' not found.");
+          return res.status(400).send({msg: "User '"+userName+"' not found."});
         }
 
         // validate the password
         if (!bcrypt.compareSync(password, user.password))
-          return res.status(400).send("Invalid Password!");
+          return res.status(400).send({msg: "Invalid Password!"});
 
         // get the user toke and register it and the userId in the session
         const token = jwt.sign({ id: user.id },
@@ -70,13 +70,13 @@ exports.signin = [
         req.session.token = token;
         req.session.userId = user.id;
 
-        return res.status(200).send("User '"+user.username+"' signed in.");
+        return res.status(200).send({msg: "User '"+user.username+"' signed in."});
       } else {
-          return res.status(400).send("'username' and 'password' must be provided!");
+          return res.status(400).send({msg: "'username' and 'password' must be provided!"});
       }
 
     } catch (error) {
-      return res.status(500).send(error.message);
+      return res.status(500).send({msg: error.message});
     }
   }
 ]
@@ -84,10 +84,8 @@ exports.signin = [
 exports.signout = async (req, res) => {
   try {
     req.session = null;
-    return res.status(200).send({
-      message: "You've been signed out!"
-    });
-  } catch (err) {
+    return res.status(200).send({msg: "You've been signed out!"});
+  } catch (error) {
     this.next(err);
   }
 };

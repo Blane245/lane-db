@@ -11,15 +11,15 @@ checkUsernameAndEmail = async (req, res, next) => {
   try { 
 
     if (!userName) {
-      return res.status(400).send("Failed! username is required!");
+      return res.status(400).send({msg: "Failed! username is required!"});
     }
 
     if (!password) {
-      return res.status(400).send("Failed! password is required!");
+      return res.status(400).send({msg: "Failed! password is required!"});
     }
 
     if (!email) {
-      return res.status(400).send("Failed! email is required!");
+      return res.status(400).send({msg: "Failed! email is required!"});
     }
 
     // Unique Username
@@ -29,7 +29,7 @@ checkUsernameAndEmail = async (req, res, next) => {
       }
     });
     if (user) {
-      return res.status(400).send("Failed! Username is already in use!");
+      return res.status(400).send({msg: "Failed! Username is already in use!"});
     }
 
     // Unique Email
@@ -39,14 +39,14 @@ checkUsernameAndEmail = async (req, res, next) => {
       }
     });
     if (user2) {
-      return res.status(400).send("Failed! Email is already in use!");
+      return res.status(400).send({msg: "Failed! Email is already in use!"});
     }
       
     // we're good
     return next();
 
   } catch (error) {
-    return res.status(500).send(error.message);
+    return res.status(500).send({msg: error.message});
   }
 }
 
@@ -54,7 +54,7 @@ checkRolesExist = (req, res, next) => {
   if (req.query.roles) {
     for (let i = 0; i < req.query.roles.length; i++) {
       if (!ROLES.includes(req.query.roles[i])) {
-        return res.status(400).send("Failed! Role does not exist: '" + req.query.roles[i]+"'");
+        return res.status(400).send({msg: "Failed! Role does not exist: '" + req.query.roles[i]+"'"});
       }
 
     }

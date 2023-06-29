@@ -7,12 +7,12 @@ verifyToken = (req, res, next) => {
   let token = req.session.token;
 
   if (!token) {
-    return res.status(403).send("You are not signed on!");
+    return res.status(403).send({msg: "You are not signed on!"});
   }
 
   jwt.verify(token, config.secret, (err, decoded) => {
     if (err) {
-      return res.status(403).send("Your session has expired. Sign in again!");
+      return res.status(403).send({msg: "Your session has expired. Sign in again!"});
     }
     req.userId = decoded.id;
     return next();
@@ -30,9 +30,9 @@ isAdmin = async (req, res, next) => {
       }
     }
 
-    return res.status(403).send("This requires Admin Role!");
+    return res.status(403).send({msg: "This requires Admin Role!"});
   } catch (error) {
-    res.status(500).send(error.maessage);
+    res.status(500).send({msg: error.message});
   }
 };
 
@@ -47,9 +47,9 @@ isModerator = async (req, res, next) => {
       }
     }
 
-    return res.status(403).send("Requires Moderator Role!");
+    return res.status(403).send({msg: "Requires Moderator Role!"});
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({msg: error.message});
   }
 };
 
@@ -64,9 +64,9 @@ isModeratorOrAdmin = async (req, res, next) => {
       }
     }
 
-    return res.status(403).send("Requires Moderator or Admin Role!");
+    return res.status(403).send({msg: "Requires Moderator or Admin Role!"});
   } catch (error) {
-    res.status(500).send("Unable to validate Moderator or Admin role!");
+    res.status(500).send({msg: error.message});
   }
 };
 
@@ -94,13 +94,13 @@ isAdminOrCurrentUser = async (req,res, next) => {
       });
 
       if (reqUser.id != req.session.userId) {
-        return res.status(403).send("You can only delete yourself unless you are an admin!");
+        return res.status(403).send({msg: "You can only delete yourself unless you are an admin!"});
       }
     } 
     return next();
 
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send({msg: error.message});
   }
 };
 

@@ -21,7 +21,7 @@ exports.get = async (req, res, next) => {
                     if (isValidStatus(status)) {
                         statuses.push(status);
                     } else {
-                        return res.status(400).send("'"+ status + "' is not a valid status for an to do!");
+                        return res.status(400).send({msg: "'"+ status + "' is not a valid status for an to do!"});
                     }
                 };
             } else {
@@ -36,17 +36,17 @@ exports.get = async (req, res, next) => {
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(400).send("You must add an activity list first!");
+            return res.status(400).send({msg: "You must add an activity list first!"});
         }
 
         // get the list of activities for the identified statuses
         const list = await activityHeader.getActivity_todos(
             {where: {"status": {[Op.in]: statuses} }},
             {order: {"priority": "ASC"}});
-        return res.status(200).send({list:list, message:"Your to do list for (" + statuses.toString() + ")"});
+        return res.status(200).send({list:list, msg:"Your to do list for (" + statuses.toString() + ")"});
 
     } catch (error) {
-        return res.status(500).send(error.message);
+        return res.status(500).send({msg: error.message});
     }
     
 }
@@ -62,7 +62,7 @@ exports.delete = async (req, res, next) => {
         userId = req.session.user;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(400).send("You do not have any activities");
+            return res.status(400).send({msg: "You do not have any activities"});
         }
 
         // delete the todo record or all of the todo records
@@ -73,7 +73,7 @@ exports.delete = async (req, res, next) => {
                         activitylistId: activityHeader.id
                     }
             });
-            return res.status(200).send("The to do with description'"+description+"' either did not exist or has been deleted.");
+            return res.status(200).send({msg: "The to do with description'"+description+"' either did not exist or has been deleted."});
         } else { // delete all to dos for the user
             await ToDo.destroy ({
                 where:
@@ -81,10 +81,10 @@ exports.delete = async (req, res, next) => {
                     }
 
             });
-            return res.status(200).send("All to dos have been deleted.");
+            return res.status(200).send({msg: "All to dos have been deleted."});
         }
     } catch (error) {
-        return res.status(500).send(error.message);
+        return res.status(500).send({msg: error.message});
     }
 }
 
@@ -95,14 +95,14 @@ exports.post = async (req, res) => {
         const priorty = req.body.priority? req.body.priority: 1;
         const priority = Number.parseInt(req.body.priority);
         if (req.body.priority && isNaN(priority)) 
-            return res.status(400).send("Priority number be a number!");
+            return res.status(400).send({msg: "Priority number be a number!"});
 
         // get the activity list record for the user
         userId = req.session.userId;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(400).send("You must add an activity list first");
+            return res.status(400).send({msg: "You must add an activity list first"});
         }
 
         // create an todo record
@@ -111,10 +111,9 @@ exports.post = async (req, res) => {
 
         // add it to the activity list
         await activityHeader.addActivity_todos (todo.id);
-        return res.status(200).send(
-            {description: description, priority: priority, status: status} );
+        return res.status(200).send({description: description, priority: priority, status: status} );
     } catch (error) {
-        return res.status(500).send(error.message);
+        return res.status(500).send({msg: error.message});
     }
 }
 
@@ -125,17 +124,17 @@ exports.put = async (req, res) => {
 
         let priority = Number.parseInt(req.query.priority);
         if (req.query.priority && isNaN(priority)) 
-            return res.status(400).send("Priority number be a number!");
+            return res.status(400).send({msg: "Priority number be a number!"});
         const status = req.query.status;
         if (status && !isValidStatus(status))
-            return res.status(400).send("'"+ status + "' is not a valid status for a to do!");
+            return res.status(400).send({msg: "'"+ status + "' is not a valid status for a to do!"});
         const description = req.query.description;
 
         // find the user's activity list and then update the description
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         if (!activityHeader) { // an activity list does not exist, no activities for this user
-            return res.status(400).send("You must add an activity list first!");
+            return res.status(400).send({msg: "You must add an activity list first!"});
         } 
 
         // get the existing todo record
@@ -146,7 +145,7 @@ exports.put = async (req, res) => {
                 
             }});
         if (!todo) 
-            return res.status(400).send("The to do with description '"+description+"' does not exist!");
+            return res.status(400).send({msg: "The to do with description '"+description+"' does not exist!"});
 
         // construct the new todo record
         let newToDo = {description: todo.description};
@@ -159,7 +158,7 @@ exports.put = async (req, res) => {
         return res.status(200).send({description: description, priority: priority, status: status});
 
     } catch (error) {
-        return res.status(500).send(error.message);
+        return res.status(500).send({msg: error.message});
     }
 }
 // helper function to check that an todo status is valid

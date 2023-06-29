@@ -22,13 +22,13 @@ exports.create = async (req, res) => {
 
            // add an activity record
            const anActivity = db.activity
-            return res.status(200).send("Your activity list has been created");
+            return res.status(200).send({msg: "Your activity list has been created"});
         } else {
-            return res.status(400).send("You already have an activity list!");
+            return res.status(400).send({msg: "You already have an activity list!"});
         }
 
     } catch (error) {
-        return res.status(500).send(error.message);
+        return res.status(500).send({msg: error.message});
     }
     
 }
@@ -44,13 +44,13 @@ exports.delete = async (req, res) => {
 
         if (list) { // an activity list can be destroyed
             list = await ActivityList.destroy({where: {owner: userId}});
-            return res.status(200).send("Your activity list and all activities have been removed");
+            return res.status(200).send({msg: "Your activity list and all activities have been removed"});
         } else {
-            return res.status(400).send("You do not have an activity list!");
+            return res.status(400).send({msg: "You do not have an activity list!"});
         }
 
     } catch (error) {
-        return res.status(500).send(error.message);
+        return res.status(500).send({msg: error.message});
     }
         
 }
