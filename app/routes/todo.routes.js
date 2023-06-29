@@ -11,7 +11,7 @@ module.exports = function(app) {
   });
 
   // list activities
-  app.get("/api/todo", 
+  app.get(process.env.ENDPOINT+"todo", 
     authJwt.verifyToken, 
     controller.get
   );

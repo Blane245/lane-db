@@ -52,19 +52,19 @@ db.sequelize.sync ({ force: force }).then(() => {
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
- return res.status(404).send("That function is not implemented");
+ return res.status(404).send({msg: "That function is not implemented"});
 });
   
 // error handler
 app.use(function(err, req, res, next) {
 
   if (isDev) console.log(err);
-  res.locals.message = err.message;
+  res.locals.message = error.message;
   res.locals.error = isDev ? err : {};
 
   // render the error page
   res.status(err.status || 500);
-  res.send(res.locals.message);
+  res.send({msg: res.locals.message});
 });
 
 
