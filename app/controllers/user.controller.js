@@ -114,7 +114,12 @@ exports.modifyRoles = async (req, res, next) => {
 					});
 					const result = await user.setRoles(roles)
 					if (result) {
-						return res.status(200).send({msg: "User "+ userName+ " roles have been updated"});
+						const authorities = [];
+						const roles = await user.getRoles();
+						for (let i = 0; i < roles.length; i++) {
+						  authorities.push("ROLE_" + roles[i].name.toUpperCase());
+						}
+						return res.status(200).send({name: user.username, roles: authorities});
 					} else {
 						return res.status(500).send({msg: "User "+ userName+ " roles NOT updated!"});
 					}
