@@ -15,7 +15,7 @@ exports.listUsers = async (req, res) => {
 		users.forEach (user => {
 		  returnUsers.push({username: user.username, email: user.email});
 		});
-		res.status(200).send(returnUsers);
+		res.status(200).send({users:returnUsers});
 	} catch (error) {
 		res.status(500).send({msg: error.message});
 	}
@@ -47,7 +47,6 @@ exports.modifyUser = (req, res) => {
 };
 
 // the administrator or the current user only can delete user
-//TODO complete - need to delete user record and all users_roles links
 exports.deleteUser = async (req, res) => {
 
 	// this function uses mysql queries to delete reords
