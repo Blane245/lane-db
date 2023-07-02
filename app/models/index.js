@@ -27,6 +27,7 @@ db.user = require("./user.model.js")(sequelize, Sequelize);
 db.role = require("./role.model.js")(sequelize, Sequelize);
 db.activitylist = require("./activitylist.model.js")(sequelize, Sequelize);
 db.todo = require("./todo.model.js")(sequelize, Sequelize);
+db.appointment = require("./appointment.model.js")(sequelize, Sequelize);
 
 // build the relationships models
 
@@ -48,6 +49,13 @@ db.activitylist.hasMany(db.todo, {
   as: "activity_todos"
 });
 
+// many appointments for an activity list
+db.activitylist.hasMany(db.appointment, {
+  as: "activity_appointments"
+});
+
 db.ROLES = ["user", "admin", "moderator"];
-db.TODOSTATUSES = ["todo", "inprogress", "done"]
+db.TODOSTATUSES = ["todo", "inprogress", "done"];
+db.REPEATUNITS = ["week", "day", "month", "year"];
+db.REPEATENDS = ["never", "on", "after"];
 module.exports = db;
