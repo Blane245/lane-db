@@ -8,7 +8,7 @@ require('dotenv').config();
 
 var corsOptions = { origin: "*"};
 
-var isDev = (process.env.NODE_ENV || "development" == "development")? true: false
+var isDev = ((process.env.NODE_ENV || "development") == "development")? true: false
 const app= express();
 app.use(cors(corsOptions));
 
