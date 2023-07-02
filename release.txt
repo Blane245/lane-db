@@ -1,4 +1,6 @@
-implemented https, though http redirection is still not happening.
-changed all responses to json
-implemented endpoints /api/ for product and /test/ for test
+Added duedate to todos
+Added todo list filter for due date - can be 'all', 'today', 'tomorrow'
+    All todos with null duedates or duedates le that specified are listed
+Secured root account
+
 

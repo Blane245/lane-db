@@ -78,10 +78,12 @@ async function initial (db) {
     // console.log("created Role:", JSON.stringify(role, null, 2));
   });
   
+  const config = require("./app/config/auth.config");
+
   const user = await User.create({
     username: "root",
     email: "blane2245@gmail.com",
-    password: bcrypt.hashSync("root", 8)
+    password: bcrypt.hashSync(config.rootPassword, 8)
   })
   // console.log("created User:", JSON.stringify(user, null, 2) );
   

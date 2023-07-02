@@ -33,7 +33,7 @@ exports.get = async (req, res, next) => {
 
         let whereClause = {"status": {[Op.in]: statuses} };
         const dateSelect = req.query.date;
-        if (!dateSelect && !dateSelect == 'all' && !dateSelect == 'today' && !dateSelect == 'tomorrow') {
+        if (!(!dateSelect || (dateSelect == 'all') || (dateSelect == 'today') || (dateSelect == 'tomorrow'))) {
             return res.status(400).send({msg: "The date must be 'all', 'today', tomorrow', or not specified"});
         }
         let trialDate = null;
@@ -50,14 +50,17 @@ exports.get = async (req, res, next) => {
                 break;
         }
         if (trialDate) {
-            const formatedDate = new Intl.DateTimeFormat('en-US',
-                {year:"4-digit", 
-                month:'2-digit', 
-                day:'2-digit', 
-                pattern: '{year}/{month}/{day}'}).format(trialDate);
+            // const formatedDate = new Intl.DateTimeFormat('en-US',
+            //     {year:"4-digit", 
+            //     month:'2-digit', 
+            //     day:'2-digit', 
+            //     pattern: '{year}/{month}/{day}'}).format(trialDate);
             whereClause = {[Op.and]: [
                 whereClause,
-                {"dueDate": {[Op.le]: formatedDate}}
+                {[Op.or]: [
+                    {"duedate": {[Op.le]: trialDate}},
+                    {"duedate": null}
+                ]}
             ]}
         }
 
@@ -142,7 +145,7 @@ exports.post = async (req, res) => {
             return res.status(400).send({msg: "Priority number be a number!"});
 
         // check due date
-        const duedate = req.body.duedate;
+        let duedate = req.body.duedate;
         if (duedate) {
             // must have the form yyyy/mm/dd
             if (!/^([0-9]{4,})\/([0-9]{2,})\/([0-9]{2,})/.test(duedate)) {
@@ -152,7 +155,11 @@ exports.post = async (req, res) => {
 
         // create an todo record
         const status = db.TODOSTATUSES[0];
-        const todo = await ToDo.create({description:description, priority:priorty, status: status, duedate: duedate})
+        
+        const todo = await ToDo.create({description:description, 
+            priority:priorty, 
+            status: status, 
+            duedate: (duedate)?new Date(duedate):null})
 
         // add it to the activity list
         await activityHeader.addActivity_todos (todo.id);
@@ -211,19 +218,19 @@ exports.put = async (req, res) => {
 
         // construct the new todo record
         let newToDo = {description: todo.description};
-        newToDo.priority = isNaN(priority)? priority: todo.priority;
+        newToDo.priority = isNaN(priority)? todo.priority: priority;
         if (status)
             newToDo.status = status? status: todo.status;
         if (duedate) {
             if (duedate == "none")
                 newToDo.duedate = null;
             else
-                newToDo.dueDate = duedate;
+                newToDo.duedate = new Date(duedate);
         }
 
         // update the todo record with the new data
-        await todo.set(newToDo);
-        return res.status(200).send({description: description, priority: priority, status: status, duedate: duedate});
+        await todo.update(newToDo, {where: {id: todo.id}});
+        return res.status(200).send(newToDo);
 
     } catch (error) {
         return res.status(500).send({msg: error.message});
