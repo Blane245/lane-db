@@ -2,7 +2,6 @@ const db = require("../models");
 const ActivityList = db.activitylist;
 const Activity = db.activity
 
-//TODO implement activity list maintenance
 // only one activity list can exist for a user
 // only the user can add their activity lists [/activitylist POST with optional username]
 // only the user can delete their activity lists [/activitylist DELETE with optional username]

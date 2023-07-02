@@ -2,7 +2,6 @@ const package = require("../../package.json");
 const fs = require("fs");
 
 // list all users
-//TODO need to convert \n to paragraphs and \t to tabs
 exports.getVersion = async (req, res, next) => {
   try 
 	{	

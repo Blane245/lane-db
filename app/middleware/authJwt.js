@@ -105,7 +105,7 @@ isAdminOrCurrentUser = async (req,res, next) => {
 };
 
 
-//TODO implement
+//TODO: implement when needed
 isCurrentUser = async (req,res, next) => {
   return next();
 }

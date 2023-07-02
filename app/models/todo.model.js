@@ -7,6 +7,7 @@ module.exports = (sequelize, Sequelize) => {
   },
   description: Sequelize.STRING, // the description of this activity
   priority: Sequelize.INTEGER, 
+  duedate: Sequelize.DATE,   // yyyy-mm-dd
   status: Sequelize.STRING, // one of db.TODOSTATUSES
   });
 
