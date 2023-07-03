@@ -1,5 +1,4 @@
 const db = require("../models");
-const config = require("../config/auth.config");
 const { authJwt } = require("../middleware");
 const { body, validationResult } = require('express-validator');
 const User = db.user;
@@ -60,7 +59,7 @@ exports.signin = [
 
         // get the user toke and register it and the userId in the session
         const token = jwt.sign({ id: user.id },
-                              config.secret,
+                              process.env.SECRET_KEY,
                               {
                                 algorithm: 'HS256',
                                 allowInsecureKeySizes: true,

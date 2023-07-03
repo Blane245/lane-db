@@ -17,7 +17,7 @@ app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieSession ({
-  name: (isDev)?"lanedb-test-session":"lanedb-session",
+  name: process.env.SESSION,
   keys: ["COOKIE_SECRET"],
   httpOnly: true,
 }));
@@ -78,12 +78,10 @@ async function initial (db) {
     // console.log("created Role:", JSON.stringify(role, null, 2));
   });
   
-  const config = require("./app/config/auth.config");
-
   const user = await User.create({
     username: "root",
     email: "blane2245@gmail.com",
-    password: bcrypt.hashSync(config.rootPassword, 8)
+    password: bcrypt.hashSync(process.env.ROOT_PASSWORD, 8)
   })
   // console.log("created User:", JSON.stringify(user, null, 2) );
   

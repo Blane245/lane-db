@@ -7,6 +7,7 @@ module.exports = (sequelize, Sequelize) => {
     },
     title: Sequelize.STRING,
     description: Sequelize.STRING, // the description of this activity
+    withinwhom: Sequelize.STRING, // who is appointment with
     allday: Sequelize.BOOLEAN,
     starttime: Sequelize.DATE,   // date and time
     endtime: Sequelize.DATE, // date and time
