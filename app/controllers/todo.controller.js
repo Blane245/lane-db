@@ -3,9 +3,6 @@ const ActivityList = db.activitylist;
 const ToDo = db.todo;
 var Op = db.Sequelize.Op;
 
-//TODO: due date not storing or updating
-
-
 // user may list activities on their list in priority order. [GET /activities?statuses=[statuslist]]
 exports.get = async (req, res, next) => {
     try {
