@@ -13,10 +13,12 @@
     "dotenv": "^16.1.4",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
+    "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
     "sequelize": "^6.31.1",
+    "socket.io": "^4.7.1",
     "todo": "^1.1.0"
   },
   "keywords": [
@@ -29,5 +31,17 @@
     "authentication",
     "authorization",
     "mysql"
-  ]
+  ],
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blane245/lane-db.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Blane245/lane-db/issues"
+  },
+  "homepage": "https://github.com/Blane245/lane-db#readme"
 }

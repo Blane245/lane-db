@@ -5,6 +5,21 @@ const bodyParser = require ('body-parser');
 var bcrypt = require("bcryptjs");
 require('dotenv').config();
 
+// using the following resources to put together a multiroom chart with 
+// an AI bot in one room
+// https://github.com/mehulk05/Chat-app-using-Nodejs/blob/master/public/js/chat.js
+// https://medium.com/weekly-webtips/building-a-multiroom-chat-application-in-node-js-8a8adca5acf2
+// set up the socket io for the chat service
+const http = require("http").Server(app);
+const io = require("socket.io")(http);
+const { joinRoom , sendMessage, sendLocation, disconnect} = require("./app/middleware/chat");
+io.on("connection", (socket) =>{
+  if (isDev) console.log("a user is connected");
+  socket.on("join", joinRoom({ username, room }, cb));
+  socket.on("sendMessage", sendMessage(msg, cb));
+  socket.on("sendLocation", sendLocation(io, location, cb));
+  socket.on("disconnect", disconnect(io));
+}
 
 var corsOptions = { origin: "*"};
 
@@ -28,6 +43,8 @@ require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/activitylist.routes")(app);
 require("./app/routes/todo.routes")(app);
+
+
 
 // set up the listener
 const port = process.env.PORT;
