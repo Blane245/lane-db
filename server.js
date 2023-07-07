@@ -22,7 +22,7 @@ app.use(
     keys: ["COOKIE_SECRET"],
     httpOnly: true,
     sameSite: "none",
-    secure: true
+    secure: true,
   })
 );
 
