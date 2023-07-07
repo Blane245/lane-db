@@ -1,7 +1,7 @@
 {
   "name": "lane-db",
   "author": "blane245",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Database server for the lane family",
   "main": "server.js",
   "dependencies": {
@@ -17,9 +17,10 @@
     "jsonwebtoken": "^9.0.0",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
+    "pug": "^3.0.2",
     "sequelize": "^6.31.1",
-    "socket.io": "^4.7.1",
-    "todo": "^1.1.0"
+    "todo": "^1.1.0",
+    "ws": "^8.13.0"
   },
   "keywords": [
     "node.js",

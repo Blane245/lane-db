@@ -4,11 +4,11 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       autoIncrement: true,
       primaryKey: true,
-  },
-  username: {type: Sequelize.STRING}, // name of the user who sent the message
-  message: {type: Sequelize.STRING},
     },
+    username: {type: Sequelize.STRING}, // name of the user who sent the message
+    message: {type: Sequelize.STRING},
+    time: {type: Sequelize.DATE}
   });
 
-  return ActivityList;
+  return ChatMessage;
 };
