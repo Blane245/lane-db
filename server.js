@@ -12,6 +12,11 @@ var isDev =
 const app = express();
 app.use(cors(corsOptions));
 
+//sets express configurations to be more friendly with nginx reverse proxy
+//https://expressjs.com/en/guide/behind-proxies.html
+
+app.set('trust proxy', true) // trust first proxy
+
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
