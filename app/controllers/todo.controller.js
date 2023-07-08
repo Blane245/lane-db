@@ -135,7 +135,7 @@ exports.put = async (req, res) => {
         // check that an activity list exists
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
-       // verify description
+        // verify description
         const description = req.query.description;
         if (!description || description == "") {
             return res.status(400).send({msg: "Description must be provided and not blank!"});
