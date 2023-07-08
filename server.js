@@ -11,7 +11,10 @@ var corsOptions = { origin: true, credentials: true };
 var isDev = ((process.env.NODE_ENV || "development") == "development") ? true : false
 const app = express();
 app.use(cors(corsOptions));
-// app.use(cors());
+
+// sets express configuration to be more friendly with nginx reverse proxy
+// https://expressjs.com/en/quide/behind-proxies.html
+app.set('trust proxy', true); // trust first proxy
 
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
@@ -21,6 +24,8 @@ app.use(cookieSession({
   name: (isDev) ? "lanedb-test-session" : "lanedb-session",
   keys: ["COOKIE_SECRET"],
   httpOnly: true,
+  sameSite: "none",
+  secure:true
 }));
 
 // routes
