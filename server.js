@@ -1,16 +1,20 @@
 const express = require("express");
 const cors = require("cors");
 const cookieSession = require("cookie-session");
-const bodyParser = require ('body-parser');
+const bodyParser = require('body-parser');
 var bcrypt = require("bcryptjs");
 require('dotenv').config();
 
 
-var corsOptions = { origin: "*"};
+var corsOptions = { origin: true, credentials: true };
 
 var isDev = ((process.env.NODE_ENV || "development") == "development")? true: false
 const app= express();
 app.use(cors(corsOptions));
+
+// sets express configuration to be more friendly with nginx reverse proxy
+// https://expressjs.com/en/quide/behind-proxies.html
+app.set('trust proxy', true); // trust first proxy
 
 // parse requests of content-type - application/json
 app.use(bodyParser.json());
@@ -20,6 +24,8 @@ app.use(cookieSession ({
   name: process.env.SESSION,
   keys: ["COOKIE_SECRET"],
   httpOnly: true,
+  sameSite: "none",
+  secure:true
 }));
 
 // routes
@@ -38,8 +44,8 @@ app.listen(port, () => {
 // load the db models and sync
 
 const db = require("./app/models");
-const force = (isDev)?true: false
-db.sequelize.sync ({ force: force }).then(() => {
+const force = (isDev) ? true : false
+db.sequelize.sync({ force: force }).then(() => {
   // console.log("connected to data base.");
 
   // create the default admin user and the roles
@@ -49,12 +55,12 @@ db.sequelize.sync ({ force: force }).then(() => {
 
 
 // catch 404 and forward to error handler
-app.use(function(req, res, next) {
- return res.status(404).send({msg: "That function is not implemented"});
+app.use(function (req, res, next) {
+  return res.status(404).send({ msg: "That function is not implemented" });
 });
-  
+
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
 
   if (isDev) console.log(err);
   res.locals.message = error.message;
@@ -62,32 +68,33 @@ app.use(function(err, req, res, next) {
 
   // render the error page
   res.status(err.status || 500);
-  res.send({msg: res.locals.message});
+  res.send({ msg: res.locals.message });
 });
 
 
 // the initial user and roles
-async function initial (db) {
+async function initial(db) {
   const Role = db.role;
   const User = db.user;
-  
+
   const roles = []
-  db.ROLES.forEach (async function (rolename) {
-    const role = await Role.create({name: rolename});
+  db.ROLES.forEach(async function (rolename) {
+    const role = await Role.create({ name: rolename });
     roles.push(role);
     // console.log("created Role:", JSON.stringify(role, null, 2));
   });
-  
+
+  const config = require("./app/config/auth.config");
+
   const user = await User.create({
     username: "root",
     email: "blane2245@gmail.com",
     password: bcrypt.hashSync(process.env.ROOT_PASSWORD, 8)
   })
   // console.log("created User:", JSON.stringify(user, null, 2) );
-  
+
   // make root have all roles
   const result = await user.setRoles(roles);
   // console.log("added all roles to root");
 }
 
-  
