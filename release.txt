@@ -1,2 +1,3 @@
-all security sentive data has been moved to .dev
-
+all security sensitive data has been moved to .dev
+the activitylist endpoints have been removed. I user gets one on signup
+all todo endpoints respond with the full activity for the user
