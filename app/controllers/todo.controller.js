@@ -87,26 +87,6 @@ exports.post = async (req, res) => {
                 return res.status(400).send({msg: "Due Date must be in the form yyyy/mm/dd"});
             }
         }
-        // check description
-        const description = req.body.description;
-        if (!description || description == "") {
-            return res.status(400).send({msg: "Description must be provided and not blank!"});
-        }
-
-        // check proirity
-        const priorty = req.body.priority? req.body.priority: 1;
-        const priority = Number.parseInt(req.body.priority);
-        if (req.body.priority && isNaN(priority)) 
-            return res.status(400).send({msg: "Priority number be a number!"});
-
-        // check due date
-        let duedate = req.body.duedate;
-        if (duedate) {
-            // must have the form yyyy/mm/dd
-            if (!/^([0-9]{4,})\/([0-9]{2,})\/([0-9]{2,})/.test(duedate)) {
-                return res.status(400).send({msg: "Due Date must be in the form yyyy/mm/dd"});
-            }
-        }
 
         // create an todo record
         const status = db.TODOSTATUSES[0];
