@@ -8,8 +8,8 @@ require('dotenv').config();
 
 var corsOptions = { origin: true, credentials: true };
 
-var isDev = ((process.env.NODE_ENV || "development") == "development") ? true : false
-const app = express();
+var isDev = ((process.env.NODE_ENV || "development") == "development")? true: false
+const app= express();
 app.use(cors(corsOptions));
 
 // sets express configuration to be more friendly with nginx reverse proxy
@@ -20,8 +20,8 @@ app.set('trust proxy', true); // trust first proxy
 app.use(bodyParser.json());
 // parse requesets of content type - application/x-www-for-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieSession({
-  name: (isDev) ? "lanedb-test-session" : "lanedb-session",
+app.use(cookieSession ({
+  name: process.env.SESSION,
   keys: ["COOKIE_SECRET"],
   httpOnly: true,
   sameSite: "none",
@@ -32,8 +32,8 @@ app.use(cookieSession({
 require("./app/routes/version.routes")(app);
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
-require("./app/routes/activitylist.routes")(app);
 require("./app/routes/todo.routes")(app);
+// require("./app/routes/appointment.routes")(app);
 
 // set up the listener
 const port = process.env.PORT;
@@ -89,7 +89,7 @@ async function initial(db) {
   const user = await User.create({
     username: "root",
     email: "blane2245@gmail.com",
-    password: bcrypt.hashSync(config.rootPassword, 8)
+    password: bcrypt.hashSync(process.env.ROOT_PASSWORD, 8)
   })
   // console.log("created User:", JSON.stringify(user, null, 2) );
 
@@ -97,5 +97,4 @@ async function initial(db) {
   const result = await user.setRoles(roles);
   // console.log("added all roles to root");
 }
-
 

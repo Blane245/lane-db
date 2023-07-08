@@ -1,9 +1,8 @@
 const db = require("../models");
-const config = require("../config/auth.config");
 const { authJwt } = require("../middleware");
 const { body, validationResult } = require('express-validator');
 const User = db.user;
-const Role = db.role;
+const ActivityList = db.activitylist;
 
 const Op = db.Sequelize.Op;
 
@@ -24,6 +23,10 @@ exports.signup = async (req, res, next) => {
 
     // user role assigned to new users
     const result = user.setRoles([1]);
+
+    // add an activity list for the user
+    list = await ActivityList.create({owner: user.id});
+
     if (result) res.status(200).send({msg: "User registered successfully!"});
   } catch (error) {
     res.status(500).send({msg: error.message});
@@ -60,7 +63,7 @@ exports.signin = [
 
         // get the user toke and register it and the userId in the session
         const token = jwt.sign({ id: user.id },
-                              config.secret,
+                              process.env.SECRET_KEY,
                               {
                                 algorithm: 'HS256',
                                 allowInsecureKeySizes: true,

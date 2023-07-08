@@ -24,7 +24,22 @@ Bob Lane
 Ryan Lane
 # Documentation
 The apiary file in the lane-db-test repository defines the REST structure for this app
-https://github.com/Blane245/lane-db-test
-https://lanedb.docs.apiary.io/
-# TODOs
-* Github pull request and issues is not working in VS Code
+# Appointment Use Cases (because they are a lot of them)
+1. Add an appointment with <someone> for next <weekday> at <time> for <duration (hours and minutes)> to <title>.
+* This will add an appointment with no description or repetition. The start one the day/time specified and run for the duration. The trasaction will be
+- title: <title>
+- withwhom: <someone>
+- starttime: <yyyy/mm/dd of weekday time>
+- endtime: <starttime + duration>
+1. Add an appointment with <someone> for all day next <weekday> to <title>.
+- this adds an all day appointment
+1. Add an appointment with <someone> for next <weekday> at <time> for <duration> to <title> (and repeat every <interval> <unit> (forever | for <times> | until <enddate>))
+This will set up a repeating appointment with the interval and unit specified than ends as specified
+1. Modify the appointment <title> (to be with <someone>) (and) to start at <time> (and) to be for <duration>
+- changing the start time without changing the duration will move the end time to maintain the duration 
+1. Modify the appointment <title> to be all day.
+start and end times are ignored
+1. Modify the appointment <title> to repeat every <interval> <unit> (forever | for <times> | until <enddate>)
+
+
+
