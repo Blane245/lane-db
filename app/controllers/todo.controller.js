@@ -141,12 +141,6 @@ exports.put = async (req, res) => {
             return res.status(400).send({msg: "Description must be provided and not blank!"});
         }
 
-        // verify description
-        const description = req.query.description;
-        if (!description || description == "") {
-            return res.status(400).send({msg: "Description must be provided and not blank!"});
-        }
-
         // get the existing todo record
         const todo = await ToDo.findOne({where:
             {
