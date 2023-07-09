@@ -1,3 +1,4 @@
 node_modules/
 .env
 app/config/auth.config.js
+lane-db.code-workspace
