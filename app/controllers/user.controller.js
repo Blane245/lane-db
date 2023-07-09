@@ -183,6 +183,10 @@ exports.listRoles = async (req, res, next) => {
 	}
 
 }
+
+//helper functions
+
+// see if the user has the admin role
 async function isAdmin (userId, res) {
 	try {
 	  const user = await User.findByPk(userId);

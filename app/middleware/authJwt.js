@@ -9,7 +9,7 @@ verifyToken = (req, res, next) => {
     return res.status(403).send({msg: "You are not signed on!"});
   }
 
-  jwt.verify(token, pro, (err, decoded) => {
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
     if (err) {
       return res.status(403).send({msg: "Your session has expired. Sign in again!"});
     }

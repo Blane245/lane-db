@@ -15,6 +15,7 @@
     "express-validator": "^7.0.1",
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.1",
+    "mermaid.cli": "^0.5.1",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
     "pug": "^3.0.2",
