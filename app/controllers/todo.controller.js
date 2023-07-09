@@ -1,7 +1,7 @@
 const db = require("../models");
 const ActivityList = db.activitylist;
 const ToDo = db.todo;
-var Op = db.Sequelize.Op;
+const Op = db.Sequelize.Op;
 
 // get the current user's todo list
 exports.get = async (req, res, next) => {

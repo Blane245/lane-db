@@ -1,7 +1,7 @@
 {
   "name": "lane-db",
   "author": "blane245",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Database server for the lane family",
   "main": "server.js",
   "dependencies": {
@@ -13,12 +13,15 @@
     "dotenv": "^16.1.4",
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
-    "jsonwebtoken": "^9.0.0",
+    "http": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.1",
     "mermaid.cli": "^0.5.1",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
+    "pug": "^3.0.2",
     "sequelize": "^6.31.1",
-    "todo": "^1.1.0"
+    "todo": "^1.1.0",
+    "ws": "^8.13.0"
   },
   "keywords": [
     "node.js",
@@ -30,5 +33,17 @@
     "authentication",
     "authorization",
     "mysql"
-  ]
+  ],
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Blane245/lane-db.git"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Blane245/lane-db/issues"
+  },
+  "homepage": "https://github.com/Blane245/lane-db#readme"
 }
