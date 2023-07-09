@@ -28,7 +28,7 @@ db.role = require("./role.model.js")(sequelize, Sequelize);
 db.activitylist = require("./activitylist.model.js")(sequelize, Sequelize);
 db.todo = require("./todo.model.js")(sequelize, Sequelize);
 db.appointment = require("./appointment.model.js")(sequelize, Sequelize);
-db.message = require("./message.model.js")(sequelize, Sequelize);
+db.chatmessage = require("./chatmessage.model.js")(sequelize, Sequelize);
 db.room = require("./room.model.js")(sequelize, Sequelize);
 
 // build the relationships models
@@ -58,8 +58,17 @@ db.activitylist.hasMany(db.appointment, {
 
 // there is a one to many relationship between rooms and messages
 // each message belongs in one room
-db.room.hasMany(db.message, {
+db.room.hasMany(db.chatmessage, {
   as: "room_messages"
+});
+
+// there is a many to many relationship between users and rooms to represent
+// users that are in the rooms
+db.room.hasMany(db.user, {
+  through: "rooms_users"
+});
+db.user.hasMany(db.room, {
+  through: "rooms_users"
 });
 
 // there is a many to many relationship between users and rooms to represent the

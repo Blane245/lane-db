@@ -53,7 +53,7 @@ const expressServer = app.listen(port, () => {
 // setup the websocket
 const wss = new WebSocket.Server({ server: expressServer, path: "/ws"});
 
-// arracy to hold current connected clients
+// array to hold current connected clients
 var wsClients = [];
 
 // Handle the WebSocket connection event. This checks the request URL for 
@@ -95,6 +95,17 @@ wss.on("connection", (ws, req) => {
       });
     }
   });
+  ws.on('close', () => {
+    
+    // remove the user from the socket clients
+    for (let i = 0; i < wsClients.length; i++) {
+      if (wsClients[i].ws == ws) {
+        wsClients.splice(i, 1);
+        break;
+      }
+    }
+    wsClients
+  })
 });
 //TODO wss disconnect handler??? probably needed for cleanup 
 // when clients disconnect

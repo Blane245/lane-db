@@ -1,0 +1,61 @@
+---
+title: Lane Database
+---
+erDiagram
+    User {
+        integer id PK
+        string username
+        string password "encrypted"
+        string email UK "must not match any other user email"
+    }
+    Role {
+        integer id PK
+        string name "admin, moderator, user"
+
+    }
+    ActivityList {
+        integer id PK
+    }
+    ToDo {
+        integer id PK
+        string description
+        integer priority "optional"
+        Date duedate
+        string status  "todo, inprogress, done"
+    }
+    Appointment {
+        integer id PK
+        string title 
+        string description "optional"
+        string withwho "optional"
+        boolean allday
+        Date starttime "date and time"
+        Date endtime "date and time"
+        boolean doesrepeat 
+        integer repeatinterval "1 or greater"
+        enum repeatunit "day, week, month, year"
+        enum repeatends "never, on, after"
+        dateonly repeatendson
+        integer repeatendsafter
+
+
+    }
+    Room{
+        integer id PK
+        string roomname
+    }
+    ChatMessage {
+        integer id PK
+        string username
+        string message 
+        Date time
+
+    }
+    User ||--|| ActivityList : user_activity
+    ActivityList ||--o{ ToDo : activity_todos
+    ActivityList ||--o{ Appointment : activity_appointments
+    User }|--|{ Role : users_roles
+    Room ||--o{ ChatMessage: room_messages
+    User }o--o{ Room: rooms_users    
+    User }o--o{ Room: moderators_rooms
+    User }o--o{ Room: blocked_rooms
