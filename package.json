@@ -14,6 +14,7 @@
     "express": "^4.18.2",
     "express-validator": "^7.0.1",
     "jsonwebtoken": "^9.0.0",
+    "mermaid.cli": "^0.5.1",
     "mysql2": "^3.3.3",
     "path": "^0.12.7",
     "sequelize": "^6.31.1",
