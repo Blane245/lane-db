@@ -3,7 +3,9 @@ const ActivityList = db.activitylist;
 const Appointment = db.appointment;
 var Op = db.Sequelize.Op;
 
-
+const WSClient = require("../middleware/WSClients")
+var wsClients = null;
+exports.setClients = (clients) => {wsClients = clients};
 
 // list appints - filter by date (today | tomorrow | week | all)
 exports.get = async (req, res, next) => {

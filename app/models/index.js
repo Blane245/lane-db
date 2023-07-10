@@ -64,10 +64,10 @@ db.room.hasMany(db.chatmessage, {
 
 // there is a many to many relationship between users and rooms to represent
 // users that are in the rooms
-db.room.hasMany(db.user, {
+db.room.belongsToMany(db.user, {
   through: "rooms_users"
 });
-db.user.hasMany(db.room, {
+db.user.belongsToMany(db.room, {
   through: "rooms_users"
 });
 
