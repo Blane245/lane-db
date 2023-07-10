@@ -81,7 +81,7 @@ wss.on("connection", (ws, req) => {
       ws.close();
     } else {
       wsClients.add (ws, token, decoded.username);
-      ws.emit("ack");
+      ws.send("ack");
     }
   });
 
