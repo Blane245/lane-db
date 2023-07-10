@@ -91,66 +91,6 @@ wss.on("connection", (ws, req) => {
     wsClients.delete (ws);
   });
 });
-//TODO wss disconnect handler??? probably needed for cleanup 
-// when clients disconnect
-// load the db models and sync
-
-// array to hold current connected clients
-var wsClients = [];
-
-// Handle the WebSocket connection event. This checks the request URL for 
-// a JWT token. If the JWT can be verified, the client connection is added
-// and the token is added to the wsClients array;
-// otherwise, the connection is closed
-wss.on("connection", (ws, req) => {
-  const token = url.parse(req.url, true).query.token;
-  jwt.verify(token, process.env.SECERT_KEY, (err, decoded) => {
-    if (err) {
-      ws.close();
-    } else {
-      wsClients[token] = {ws:ws, wsUsername: decoded.username};
-    }
-  });
-
-  // TODO move this handled to a lower level so other sends 
-  // can be processed without overloading this part of the code
-  // handle the WebSocket 'message' event. if any of the clients
-  // has a token that is no longer valid, send an error message 
-  // and close the client connection.
-  // Also remove the client from the client array
-  ws.on('message', (data) => {
-    for (const [token, client] of Object.entries(wsClients)) {
-      jwt.verify(token, process.env.SECERT_KEY, (err, decoded) =>  {
-        if (err) {
-          client.ws.send({msg: "Your authorization is no longer valid. Please login again"});
-          client.ws.close();
-          delete wsClients[token];
-          // TODO remove the user from any room where present
-        } else {
-          // TODO send the message back to the user and room that it
-          // came from and all other authorized users in the roon
-          // the data should include the room name 
-          // the called routine must know which users are in which 
-          // rooms
-          // sendMessage (client.wsUsername, data.room, data.message);
-        }
-      });
-    }
-  });
-  ws.on('close', () => {
-    
-    // remove the user from the socket clients
-    for (let i = 0; i < wsClients.length; i++) {
-      if (wsClients[i].ws == ws) {
-        wsClients.splice(i, 1);
-        break;
-      }
-    }
-    wsClients
-  })
-});
-//TODO wss disconnect handler??? probably needed for cleanup 
-// when clients disconnect
 
 // load the db models and sync
 const db = require("./app/models");
