@@ -6,7 +6,8 @@ var bcrypt = require("bcryptjs");
 const WebSocket = require('ws');
 const jwt = require('jsonwebtoken');
 const url = require('url');
-const { WSClients } = require("./app/middleware/WSClients")
+const { WSClients } = require("./app/middleware/WSClients");
+const path = require('path');
 require('dotenv').config();
 
 var corsOptions = { origin: true, credentials: true };

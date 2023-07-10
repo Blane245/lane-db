@@ -77,7 +77,7 @@ exports.signin = [
         req.session.userId = user.id;
         console.log(token);
 
-        return res.status(200).send(token);
+        return res.status(200).send({msg: "User '"+userName+"' signed in.", token: token});
 
       } else {
           return res.status(400).send({msg: "'username' and 'password' must be provided!"});
