@@ -1,3 +1,5 @@
 all security sensitive data has been moved to .dev
-the activitylist endpoints have been removed. I user gets one on signup
+the activitylist endpoints have been removed. The user gets one on signup
 all todo endpoints respond with the full activity for the user
+WebSockets implemented so that all user connections will update teh todo list whenever one connection makes a change
+

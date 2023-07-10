@@ -2,18 +2,26 @@ const db = require("../models");
 const ActivityList = db.activitylist;
 const ToDo = db.todo;
 var Op = db.Sequelize.Op;
+const WSClient = require("../middleware/WSClients")
+var wsClients = null;
+exports.setClients = (clients) => {
+    wsClients = clients
+};
 
 // get the current user's todo list
 exports.get = async (req, res, next) => {
     try {
 
         // get the activity list record for the user
-        userId = req.session.userId;
+        const userId = req.session.userId;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         // get the todo list for the current user
         const list = await activityHeader.getActivity_todos();
-        return res.status(200).send({list:list});
+
+        // and send it to all connections points for this user
+        sendToDos (userId, list);
+        return res.status(200).send();
 
     } catch (error) {
         return res.status(500).send({msg: error.message});
@@ -29,7 +37,7 @@ exports.delete = async (req, res, next) => {
         const description = req.query.description;
 
         // get the activity list record for the user
-        userId = req.session.userId;
+        const userId = req.session.userId;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
         // delete the todo record or all of the todo records
@@ -44,7 +52,9 @@ exports.delete = async (req, res, next) => {
 
             // get the todo list for the current user
             const list = await activityHeader.getActivity_todos();
-            return res.status(200).send({list:list});
+            // and send it to all connections points for this user
+            sendToDos (userId, list);
+            return res.status(200).send();
 
         } else { // delete all to dos for the user
             await ToDo.destroy ({
@@ -52,7 +62,9 @@ exports.delete = async (req, res, next) => {
                     {activitylistId: activityHeader.id}
 
             });
-            return res.status(200).send({list:[]});
+            // and send it to all connections points for this user
+            sendToDos (userId, list);
+            return res.status(200).send();
         }
     } catch (error) {
         return res.status(500).send({msg: error.message});
@@ -64,29 +76,9 @@ exports.post = async (req, res) => {
     try {
 
         // get the activity list record for the user
-        userId = req.session.userId;
+        const userId = req.session.userId;
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
-        // check description
-        const description = req.body.description;
-        if (!description || description == "") {
-            return res.status(400).send({msg: "Description must be provided and not blank!"});
-        }
-
-        // check proirity
-        const priorty = req.body.priority? req.body.priority: 1;
-        const priority = Number.parseInt(req.body.priority);
-        if (req.body.priority && isNaN(priority)) 
-            return res.status(400).send({msg: "Priority number be a number!"});
-
-        // check due date
-        let duedate = req.body.duedate;
-        if (duedate) {
-            // must have the form yyyy/mm/dd
-            if (!/^([0-9]{4,})\/([0-9]{2,})\/([0-9]{2,})/.test(duedate)) {
-                return res.status(400).send({msg: "Due Date must be in the form yyyy/mm/dd"});
-            }
-        }
         // check description
         const description = req.body.description;
         if (!description || description == "") {
@@ -121,7 +113,9 @@ exports.post = async (req, res) => {
 
         // get the todo list for the current user
         const list = await activityHeader.getActivity_todos();
-        return res.status(200).send({list:list});
+        // and send it to all connections points for this user
+        sendToDos (userId, list);
+        return res.status(200).send();
 
     } catch (error) {
         return res.status(500).send({msg: error.message});
@@ -132,6 +126,7 @@ exports.post = async (req, res) => {
 exports.put = async (req, res) => {
     try {
 
+        const userId = req.session.userId;
         // check that an activity list exists
         const activityHeader = await ActivityList.findOne({where: {owner: userId}});
 
@@ -188,7 +183,9 @@ exports.put = async (req, res) => {
 
         // get the todo list for the current user
         const list = await activityHeader.getActivity_todos();
-        return res.status(200).send({list:list});
+        // and send it to all connections points for this user
+        sendToDos (userId, list);
+        return res.status(200).send();
 
     } catch (error) {
         return res.status(500).send({msg: error.message});
@@ -205,5 +202,13 @@ function isValidStatus (status) {
 
     return false;
 
+}
+
+// send the todo list to all connection points for the curren user
+const emitToDos = require("../middleware/emitToDos");
+const User = db.user;
+async function sendToDos (userId, list) {
+    const user = await User.findByPk (userId);
+    emitToDos (user.username, list, wsClients);
 }
 

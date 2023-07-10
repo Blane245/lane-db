@@ -3,13 +3,18 @@ const cors = require("cors");
 const cookieSession = require("cookie-session");
 const bodyParser = require('body-parser');
 var bcrypt = require("bcryptjs");
+const WebSocket = require('ws');
+const jwt = require('jsonwebtoken');
+const url = require('url');
+const { WSClients } = require("./app/middleware/WSClients");
+const path = require('path');
 require('dotenv').config();
-
 
 var corsOptions = { origin: true, credentials: true };
 
 var isDev = ((process.env.NODE_ENV || "development") == "development")? true: false
 const app= express();
+
 app.use(cors(corsOptions));
 
 // sets express configuration to be more friendly with nginx reverse proxy
@@ -35,20 +40,125 @@ require("./app/routes/user.routes")(app);
 require("./app/routes/todo.routes")(app);
 // require("./app/routes/appointment.routes")(app);
 
+// pug view engin setup
+app.set('views', [
+  path.join(__dirname, 'app/views'), 
+]);
+
+app.set('view engine', 'pug');
+app.set('vew options', {pretty: true});
+
+// setup express search folders
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'node_modules')));
+
 // set up the listener
 const port = process.env.PORT;
-app.listen(port, () => {
+const expressServer = app.listen(port, () => {
   console.log(`server is running on port ${port}.`);
 });
 
+// setup the websocket
+const wss = new WebSocket.Server({ server: expressServer, path: "/ws"});
+
+// the object to hold the WebSocket clients
+var wsClients = new WSClients(wss);
+const socketServerController = require("./app/controllers/socketServer.controller");
+// pass it to the controllers for them to use
+socketServerController.set(wsClients);
+
+// point all of the controllers to this object
+
+// Handle the WebSocket connection event. This checks the request URL for 
+// a JWT token. If the JWT can be verified, the client connection is added
+// and the token is added to the wsClients array;
+// otherwise, the connection is closed
+wss.on("connection", (ws, req) => {
+  const token = url.parse(req.url, true).query.token;
+  console.log(token);
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      ws.close();
+    } else {
+      wsClients.add (ws, token, decoded.username);
+      ws.emit("ack");
+    }
+  });
+
+  ws.on('close', () => {
+    
+    // remove the user from the socket clients
+    wsClients.delete (ws);
+  });
+});
+//TODO wss disconnect handler??? probably needed for cleanup 
+// when clients disconnect
 // load the db models and sync
 
+// array to hold current connected clients
+var wsClients = [];
+
+// Handle the WebSocket connection event. This checks the request URL for 
+// a JWT token. If the JWT can be verified, the client connection is added
+// and the token is added to the wsClients array;
+// otherwise, the connection is closed
+wss.on("connection", (ws, req) => {
+  const token = url.parse(req.url, true).query.token;
+  jwt.verify(token, process.env.SECERT_KEY, (err, decoded) => {
+    if (err) {
+      ws.close();
+    } else {
+      wsClients[token] = {ws:ws, wsUsername: decoded.username};
+    }
+  });
+
+  // TODO move this handled to a lower level so other sends 
+  // can be processed without overloading this part of the code
+  // handle the WebSocket 'message' event. if any of the clients
+  // has a token that is no longer valid, send an error message 
+  // and close the client connection.
+  // Also remove the client from the client array
+  ws.on('message', (data) => {
+    for (const [token, client] of Object.entries(wsClients)) {
+      jwt.verify(token, process.env.SECERT_KEY, (err, decoded) =>  {
+        if (err) {
+          client.ws.send({msg: "Your authorization is no longer valid. Please login again"});
+          client.ws.close();
+          delete wsClients[token];
+          // TODO remove the user from any room where present
+        } else {
+          // TODO send the message back to the user and room that it
+          // came from and all other authorized users in the roon
+          // the data should include the room name 
+          // the called routine must know which users are in which 
+          // rooms
+          // sendMessage (client.wsUsername, data.room, data.message);
+        }
+      });
+    }
+  });
+  ws.on('close', () => {
+    
+    // remove the user from the socket clients
+    for (let i = 0; i < wsClients.length; i++) {
+      if (wsClients[i].ws == ws) {
+        wsClients.splice(i, 1);
+        break;
+      }
+    }
+    wsClients
+  })
+});
+//TODO wss disconnect handler??? probably needed for cleanup 
+// when clients disconnect
+
+// load the db models and sync
 const db = require("./app/models");
 const force = (isDev) ? true : false
 db.sequelize.sync({ force: force }).then(() => {
   // console.log("connected to data base.");
 
-  // create the default admin user and the roles
+  // create the default admin user and the roles when in dev
   if (isDev)
     initial(db);
 });
@@ -83,8 +193,6 @@ async function initial(db) {
     roles.push(role);
     // console.log("created Role:", JSON.stringify(role, null, 2));
   });
-
-  const config = require("./app/config/auth.config");
 
   const user = await User.create({
     username: "root",

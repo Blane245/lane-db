@@ -5,6 +5,9 @@ const User = db.user;
 const Role = db.role;
 var bcrypt = require("bcryptjs");
 const Op = db.Sequelize.Op;
+const WSClient = require("../middleware/WSClients")
+var wsClients = null;
+exports.setClients = (clients) => {wsClients = clients};
 
 // list all users
 exports.listUsers = async (req, res) => {
