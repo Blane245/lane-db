@@ -1,5 +1,8 @@
 const package = require("../../package.json");
 const fs = require("fs");
+const WSClient = require("../middleware/WSClients")
+var wsClients = null;
+exports.setClients = (clients) => {wsClients = clients};
 
 // list all users
 exports.getVersion = async (req, res, next) => {

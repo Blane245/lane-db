@@ -3,6 +3,10 @@ const cors = require("cors");
 const cookieSession = require("cookie-session");
 const bodyParser = require('body-parser');
 var bcrypt = require("bcryptjs");
+const WebSocket = require('ws');
+const jwt = require('jsonwebtoken');
+const url = require('url');
+const { WSClients } = require("./app/middleware/WSClients")
 require('dotenv').config();
 
 
@@ -37,10 +41,45 @@ require("./app/routes/todo.routes")(app);
 
 // set up the listener
 const port = process.env.PORT;
-app.listen(port, () => {
+const expressServer = app.listen(port, () => {
   console.log(`server is running on port ${port}.`);
 });
 
+// setup the websocket
+const wss = new WebSocket.Server({ server: expressServer, path: "/ws"});
+
+// the object to hold the WebSocket clients
+var wsClients = new WSClients(wss);
+const socketServerController = require("./app/controllers/socketServer.controller");
+// pass it to the controllers for them to use
+socketServerController.set(wsClients);
+
+// point all of the controllers to this object
+
+// Handle the WebSocket connection event. This checks the request URL for 
+// a JWT token. If the JWT can be verified, the client connection is added
+// and the token is added to the wsClients array;
+// otherwise, the connection is closed
+wss.on("connection", (ws, req) => {
+  const token = url.parse(req.url, true).query.token;
+  console.log(token);
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      ws.close();
+    } else {
+      wsClients.add (ws, token, decoded.username);
+      ws.emit("ack");
+    }
+  });
+
+  ws.on('close', () => {
+    
+    // remove the user from the socket clients
+    wsClients.delete (ws);
+  });
+});
+//TODO wss disconnect handler??? probably needed for cleanup 
+// when clients disconnect
 // load the db models and sync
 
 const db = require("./app/models");
@@ -83,8 +122,6 @@ async function initial(db) {
     roles.push(role);
     // console.log("created Role:", JSON.stringify(role, null, 2));
   });
-
-  const config = require("./app/config/auth.config");
 
   const user = await User.create({
     username: "root",

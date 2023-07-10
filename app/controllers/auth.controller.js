@@ -8,6 +8,9 @@ const Op = db.Sequelize.Op;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
+const WSClient = require("../middleware/WSClients")
+var wsClients = null;
+exports.setClients = (clients) => {wsClients = clients};
 
 exports.signup = async (req, res, next) => {
 
@@ -72,8 +75,9 @@ exports.signin = [
 
         req.session.token = token;
         req.session.userId = user.id;
+        console.log(token);
 
-        return res.status(200).cookie('token', token, { sameSite: "none", secure: true }).send({msg: "User '"+user.username+"' signed in."});
+        return res.status(200).send({msg: "User '"+user.username+"' signed in.", token: token});
       } else {
           return res.status(400).send({msg: "'username' and 'password' must be provided!"});
       }
