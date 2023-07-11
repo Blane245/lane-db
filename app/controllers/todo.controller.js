@@ -207,6 +207,6 @@ function isValidStatus (status) {
 // send the todo list to all connection points for the curren user
 const { emitUserMessage } = require("../middleware/emitMessage");
 function sendToDos (userId, list, wsClients) {
-    emitUserMessage ("todos", userId, list, wsClients);
+    emitUserMessage (userId, {type: "todos", data: list}, wsClients);
 }
 

@@ -5,7 +5,7 @@ const User = db.user;
 // called whenever a message is to be emitted to all sockets for a user
 // does a little clean up on the wsClients that may have been disconnected
 // Send the todo to each of the clients that a user is connected to
-exports.emitUserMessage = (type, userId, data, wsClients) => {
+exports.emitUserMessage = (userId, data, wsClients) => {
 
 
     // remove any expired clients
@@ -21,7 +21,7 @@ exports.emitUserMessage = (type, userId, data, wsClients) => {
         if (userId == wsId) {
 
             // send the message to each connection point for this user
-            client.ws.emit(type, data);      
+            client.ws.send(JSON.stringify(data));      
         }
     }
      
