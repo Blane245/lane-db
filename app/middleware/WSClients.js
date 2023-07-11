@@ -7,13 +7,26 @@ exports.WSClients = class {
     constructor(wsServer) {
         this.#server = wsServer;
     }
+    
+    add (socket, token, userId ) {
+        this.#clients.push({token: token, ws:socket, userId: userId});
+    }
 
-    add (socket, token, userName ) {
-        this.#clients[token] = {ws:socket, wsUsername: userName}
+    get (i) {
+        return this.#clients[i];
+    }
+
+    length() {
+        return this.#clients.length;
     }
 
     find (token) {
-        return this.#clients[token];
+        for (let i = 0; i < this.#clients.length; i++) {
+            if (this.#clients[i].token == token) {
+                return this.#clients[i];
+            }
+        }
+        return null;
     }
 
     delete (ws) {

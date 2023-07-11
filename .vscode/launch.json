@@ -7,7 +7,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "lane-db",
             "skipFiles": [
                 "<node_internals>/**"
             ],
