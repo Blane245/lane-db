@@ -63,8 +63,8 @@ const wss = new WebSocket.Server({ server: expressServer, path: "/ws"});
 
 // the object to hold the WebSocket clients
 var wsClients = new WSClients(wss);
-const socketServerController = require("./app/controllers/socketServer.controller");
 // pass it to the controllers for them to use
+const socketServerController = require("./app/controllers/socketServer.controller");
 socketServerController.set(wsClients);
 
 // point all of the controllers to this object
@@ -80,7 +80,7 @@ wss.on("connection", (ws, req) => {
     if (err) {
       ws.close();
     } else {
-      wsClients.add (ws, token, decoded.username);
+      wsClients.add (ws, token, decoded.id);
       ws.send("ack");
     }
   });

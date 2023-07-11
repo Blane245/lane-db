@@ -5,7 +5,7 @@ var Op = db.Sequelize.Op;
 const WSClient = require("../middleware/WSClients")
 var wsClients = null;
 exports.setClients = (clients) => {
-    wsClients = clients
+    wsClients = clients;
 };
 
 // get the current user's todo list
@@ -20,7 +20,7 @@ exports.get = async (req, res, next) => {
         const list = await activityHeader.getActivity_todos();
 
         // and send it to all connections points for this user
-        sendToDos (userId, list);
+        sendToDos (userId, list, wsClients);
         return res.status(200).send();
 
     } catch (error) {
@@ -53,7 +53,7 @@ exports.delete = async (req, res, next) => {
             // get the todo list for the current user
             const list = await activityHeader.getActivity_todos();
             // and send it to all connections points for this user
-            sendToDos (userId, list);
+            sendToDos (userId, list, wsClients);
             return res.status(200).send();
 
         } else { // delete all to dos for the user
@@ -63,7 +63,7 @@ exports.delete = async (req, res, next) => {
 
             });
             // and send it to all connections points for this user
-            sendToDos (userId, list);
+            sendToDos (userId, list, wsClients);
             return res.status(200).send();
         }
     } catch (error) {
@@ -114,7 +114,7 @@ exports.post = async (req, res) => {
         // get the todo list for the current user
         const list = await activityHeader.getActivity_todos();
         // and send it to all connections points for this user
-        sendToDos (userId, list);
+        sendToDos (userId, list, wsClients);
         return res.status(200).send();
 
     } catch (error) {
@@ -184,7 +184,7 @@ exports.put = async (req, res) => {
         // get the todo list for the current user
         const list = await activityHeader.getActivity_todos();
         // and send it to all connections points for this user
-        sendToDos (userId, list);
+        sendToDos (userId, list, wsClients);
         return res.status(200).send();
 
     } catch (error) {
@@ -205,10 +205,8 @@ function isValidStatus (status) {
 }
 
 // send the todo list to all connection points for the curren user
-const emitToDos = require("../middleware/emitToDos");
-const User = db.user;
-async function sendToDos (userId, list) {
-    const user = await User.findByPk (userId);
-    emitToDos (user.username, list, wsClients);
+const { emitUserMessage } = require("../middleware/emitMessage");
+function sendToDos (userId, list, wsClients) {
+    emitUserMessage ("todos", userId, list, wsClients);
 }
 
