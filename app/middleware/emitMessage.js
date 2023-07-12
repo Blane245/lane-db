@@ -7,21 +7,23 @@ const User = db.user;
 // Send the todo to each of the clients that a user is connected to
 exports.emitUserMessage = (userId, data, wsClients) => {
 
+    if (wsClients) {
 
-    // remove any expired clients
-    wsCleanUp(wsClients);
+        // remove any expired clients
+        wsCleanUp(wsClients);
 
-    // find all of the user's connections and send the todo to each
-    const clientLength = wsClients.length();
-    for (let i = 0; i < clientLength; i++){
+        // find all of the user's connections and send the todo to each
+        const clientLength = wsClients.length();
+        for (let i = 0; i < clientLength; i++){
 
-        // get the username from the data and find the user and activity list records
-        const client = wsClients.get(i);
-        const wsId = client.userId;
-        if (userId == wsId) {
+            // get the username from the data and find the user and activity list records
+            const client = wsClients.get(i);
+            const wsId = client.userId;
+            if (userId == wsId) {
 
-            // send the message to each connection point for this user
-            client.ws.send(JSON.stringify(data));      
+                // send the message to each connection point for this user
+                client.ws.send(JSON.stringify(data));      
+            }
         }
     }
      

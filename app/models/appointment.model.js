@@ -10,8 +10,7 @@ module.exports = (sequelize, Sequelize) => {
     withwhom: Sequelize.STRING, // who is appointment with
     location: Sequelize.STRING, // where the appoint is 
     allday: Sequelize.BOOLEAN, // tue if the appoint is all day
-    startdate: Sequelize.DATEONLY, // date when the appointment starts
-    starttime: Sequelize.TIME,  // time of day when the appointment(s) start
+    startdate: Sequelize.DATE, // date/time when the appointment starts
     duration: Sequelize.INTEGER,   // the number of minutes in the appointment
     doesrepeat: Sequelize.BOOLEAN, // true if the appoint repeats
     repeaton: Sequelize.CHAR(7), // 0 = not on this day, 1 - on this day, 0 = Sunday

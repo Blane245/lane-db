@@ -95,8 +95,8 @@ exports.post = async (req, res) => {
         let duedate = req.body.duedate;
         if (duedate) {
             // must have the form yyyy/mm/dd
-            if (!/^([0-9]{4,})\/([0-9]{2,})\/([0-9]{2,})/.test(duedate)) {
-                return res.status(400).send({msg: "Due Date must be in the form yyyy/mm/dd"});
+            if (!/^([0-9]{4,})-([0-9]{2,})-([0-9]{2,})/.test(duedate)) {
+                return res.status(400).send({msg: "Due Date must be in the form yyyy-mm-dd"});
             }
         }
 
@@ -145,7 +145,8 @@ exports.put = async (req, res) => {
             }});
         if (!todo) 
             return res.status(400).send({msg: "The to do with description '"+description+"' does not exist!"});
-
+        
+        
 
         // verify priority
         let priority = Number.parseInt(req.query.priority);
@@ -167,7 +168,7 @@ exports.put = async (req, res) => {
         }
 
         // construct the new todo record
-        let newToDo = {description: todo.description};
+        let newToDo = {description: (req.query.newdescription)? request.query.newdescription : todo.description};
         newToDo.priority = isNaN(priority)? todo.priority: priority;
         if (status)
             newToDo.status = status? status: todo.status;
@@ -206,6 +207,7 @@ function isValidStatus (status) {
 
 // send the todo list to all connection points for the curren user
 const { emitUserMessage } = require("../middleware/emitMessage");
+const { request } = require("http");
 function sendToDos (userId, list, wsClients) {
     emitUserMessage (userId, {type: "todos", data: list}, wsClients);
 }

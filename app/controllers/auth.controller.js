@@ -30,6 +30,7 @@ exports.signup = async (req, res, next) => {
     // add an activity list for the user
     list = await ActivityList.create({owner: user.id});
 
+    req.session = null;
     if (result) res.status(200).send({msg: "User registered successfully!"});
   } catch (error) {
     res.status(500).send({msg: error.message});
