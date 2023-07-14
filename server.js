@@ -40,14 +40,6 @@ require("./app/routes/user.routes")(app);
 require("./app/routes/todo.routes")(app);
 require("./app/routes/appointment.routes")(app);
 
-// pug view engin setup
-app.set('views', [
-  path.join(__dirname, 'app/views'), 
-]);
-
-app.set('view engine', 'pug');
-app.set('vew options', {pretty: true});
-
 // setup express search folders
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'node_modules')));

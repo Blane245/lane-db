@@ -1,0 +1,10 @@
+{
+    "folders": [
+        {
+            "path": "."
+        },
+        {
+            "path": "../../Release-0.0.7/lane-db"
+        }
+    ]
+}

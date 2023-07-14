@@ -3,6 +3,7 @@ const ActivityList = db.activitylist;
 const Appointment = db.appointment;
 var Op = db.Sequelize.Op;
 
+//TODO test PUT, GET, and DELETE
 const WSClient = require("../middleware/WSClients")
 var wsClients = null;
 exports.setClients = (clients) => {wsClients = clients};
@@ -69,7 +70,7 @@ exports.create = async (req, res) => {
     try {
 
         let verifiedRecord = {};
-        const result = await verifyParameters ("POST", req.session.userId, req.body, verifiedRecord);
+        const result = await verifyPOSTParameters (req.session.userId, req.body, verifiedRecord);
         if (result != "")
             return res.status(400).send({msg: result});
         
@@ -99,7 +100,7 @@ exports.put = async (req, res) => {
     try {
 
         let verifiedRecord = {};
-        const result = await verifyParameters ("PUT", req.session.userId, req.body, verifiedRecord);
+        const result = await verifyPUTParameters (req.session.userId, req.query, verifiedRecord);
         if (result != "")
             return res.status(400).send({msg: result});
 
@@ -120,10 +121,10 @@ exports.put = async (req, res) => {
     }
 }
 
-// help function to verify the correctness of add and modify appoint parameters
-// this is called with req.body for POST and req.query for GET
+// help function to verify the correctness of add appointment parameters
+// this is called with req.body for POST
 // if everything is ok, a new appointment with the proper fields set is set as verifiedRecord, and returns a zero legnth string
-async function verifyParameters (type, userId, json, verifiedRecord) {
+async function verifyPOSTParameters (userId, json, verifiedRecord) {
 
     // get the activity list record for the user
     const activityHeader = await ActivityList.findOne({where: {owner: userId}});
@@ -140,7 +141,7 @@ async function verifyParameters (type, userId, json, verifiedRecord) {
         }});
     
     // an identical appoint must not exist when adding
-    if (type == 'POST' && appointment) {
+    if (appointment) {
         return "An appointment with that title already exists";
     }
 
@@ -201,11 +202,12 @@ async function verifyParameters (type, userId, json, verifiedRecord) {
             return "Appointment repetition interval must be a number greater than 0";
         if (!db.REPEATUNITS.includes(repeatunit))
             return "Appointment repetition unit must 'week', 'day', 'month', or 'year'";
-        //TODO verify repeats on as a char of length 7 and having only zeros and ones
+        // verify repeats on as a char of length 7 and having only zeros and ones
         if (!/^([0-1]{7,})/.test(repeaton))
             return "Appointment repeatson must be a character string of length 7 and containing only zeroes and ones";
 
-        // check the repeat ends 
+        // check the repeat ends
+        
         if (!repeatends)
             repeatends = "never";
         if (!db.REPEATENDS.includes(repeatends))
@@ -223,15 +225,9 @@ async function verifyParameters (type, userId, json, verifiedRecord) {
     doesrepeat = (doesrepeat == "true") ? true:false;
 
     // on a GET the appointment is initialialized to the current record and the option 'newtitle' is picked up
-    if (type == "GET") {
-        verifiedRecord = appointment;
-        verifiedRecord.title = (json.newtitle) ? json.newtitle: appointment.title;
-    
-    // on a POST, the title is picked put from parameters and the activity record id from the user's activity record.
-    } else if (type == "POST") {
-        verifiedRecord.title = json.title;
-        verifiedRecord.activitylistId =  activityHeader.id;
-    }
+
+    verifiedRecord.title = json.title;
+    verifiedRecord.activitylistId =  activityHeader.id;
     if (json.description) verifiedRecord.description = json.description;
     if (json.withwhom) verifiedRecord.withwhom = json.withwhom;
     if (json.location) verifiedRecord.location = json.location;
@@ -245,6 +241,152 @@ async function verifyParameters (type, userId, json, verifiedRecord) {
     if (repeatunit) verifiedRecord.repeatunit = repeatunit;
     if (repeatends) verifiedRecord.repeatends = repeatends;
     if (repeatendsafter) verifiedRecord.repeatendsafter = repeatendsafter;
+
+    // return a null string is everythin is ok
+    return "";
+}
+
+
+// help function to verify the correctness of add appointment parameters
+// this is called with req.body for PUT
+// if everything is ok, a new appointment with the proper fields set is set as verifiedRecord, and returns a zero legnth string
+async function verifyPUTParameters (userId, json, verifiedRecord) {
+
+    // get the activity list record for the user
+    const activityHeader = await ActivityList.findOne({where: {owner: userId}});
+    
+    // check title presence
+    const title = json.title;
+    if (!title || title == "")
+        return "Appointment title is required";
+
+    // check for the presence of an appointment with that title
+    const appointment = await Appointment.findOne({where: {
+            title: title,
+            activitylistId: activityHeader.id
+        }});
+    
+    // an the appointment record must exit
+    if (!appointment) {
+        return "An appointment with that title does not exists";
+    }
+
+    // get up the changes from the PUT transaction
+    verifiedRecord = appointment;
+
+    // check for new appointment title
+    const newTitle = json.newtitle;
+    if (newTitle) {
+        const trialAppointment = await Appointment.findOne({where: {
+            title: newTitle,
+            activitylistId: activityHeader.id
+        }});
+        if (trialAppointment)
+            return "An appointment with name '" + newTitle + "' already exists" ;
+        else
+            verifiedRecord.title = newTitle;
+    }
+
+    const allday = json.allday;
+    // allday
+    if (allday & !(allday == 'true' || allday == 'false'))
+        return "allday must be true or false";
+    if (allday) verifiedRecord = allday;
+
+    let startDate = json.startdate;
+    if (startDate && !/^([0-9]{4,})-([0-9]{2,})-([0-9]{2,})/.test(startDate)) {
+        return "startdate must be in the form yyyy-mm-dd";
+    }
+    let startTime = json.startTime;
+    if (startTime && !/([0-9]{2,}):([0-9]{2,})/.test(startTime))
+        return "starttime must be in the form hh:mm";
+    // TODO trickey here. User might only provide startdate or starttime and expect that the db record for the other value
+    // stays the same
+
+    let duration = json.duration;
+    let parsedDuration = null;
+    if (duration) {
+        parsedDuration = Number.parseInt(duration);
+        if (isNaN(parsedDuration) || parsedDuration < 0)
+            return "duration must be a number greater than or equal to zero";
+    }
+    if (duration)
+        verifiedRecord.duration = parsedDuration;
+
+    let doesRepeat = json.doesrepeat;
+    if (doesRepeat && !(doesRepeat == 'false' || doesRepeat == 'true'))
+        return "doesrepeat must be 'true' or 'false' or not present";
+    if (doesRepeat) verifiedRecord.doesrepeat = doesRepeat;
+    let repeatOn = json.repeaton;
+    // verify repeats on as a char of length 7 and having only zeros and ones
+    if (repeatOn && !/^([0-1]{7,})/.test(repeatOn))
+        return "Appointment repeaton must be a character string of length 7 and containing only zeroes and ones";
+    if (repeatOn) verifiedRecord.repeaton = repeatOn;
+    let repeatInterval = json.repeatinterval;
+    let parsedRepeatInterval = null;
+    if (repeatInterval) {
+        parsedRepeatInterval = Number.parseInt(repeatInterval)
+        if (isNaN(parsedRepeatInterval) || parsedRepeatInterval < 1)
+            return "Appointment repetition interval must be a number greater than 0";
+    }
+    if (repeatInterval) verifiedRecord.repeatinterval = parsedRepeatInterval;
+
+    let repeatUnit = json.repeatunit;
+    if (repeatUnit && !db.REPEATUNITS.includes(repeatUnit))
+        return "Appointment repetition unit must 'week', 'day', 'month', or 'year'";
+    if (repeatUnit) verifiedRecord.repeatunit = repeatUnit;
+
+    let repeatEnds = json.repeatends;
+    if (repeatEnds && !db.REPEATENDS.includes(repeatEnds))
+        return "Appointment repetition ends must be 'never', 'on', or 'after'";
+    if (repeatEnds) verifiedRecord.repeatends = repeatEnds;
+
+    let repeatEndsOn = json.repeatendson
+    if (repeatEndsOn && (!repeatEndsOn || !/^([0-9]{4,})-([0-9]{2,})-([0-9]{2,})/.test(repeatEndsOn)))
+        return "Appointment repetition ends on must be provided and in the form yyyy-mm-dd";
+    if (repeatEndsOn) verifiedRecord.repeatendson = repeatEndsOn;
+
+    let repeatEndsAfter = json.repeatendsafter;
+    let parsedRepeatEndsAfter = null;
+    if (repeatEndsAfter) {
+        parsedRepeatEndsAfter = Number.parseInt(repeatEndsAfter);
+        if (isNaN(parsedRepeatEndsAfter) || parsedRepeatEndsAfter <= 1)
+            return "Appointment repetition ends after must be provided and be a number greater than 1";
+    }
+    if (repeatEndsAfter) verifiedRecord.repeatendsafter = parsedRepeatEndsAfter;
+
+    // verifiedRecord has been built up, make it conform to allday and repeating rules
+    if (verifiedRecord.allday) {
+        verifiedRecord.startdate = null;
+        verifiedRecord.duration = null;
+    } else {
+        if (!verifiedRecord.startdate || !verifiedRecord.duration)
+            return ("an appointment that is not all day must have a startdate and duration");
+    }
+    if (!verifiedRecord.doesrepeat) {
+        verifiedRecord.repeatends = null;
+        verifiedRecord.repeatendsafter = null;
+        verifiedRecord.repeatendson = null;
+        verifiedRecord.repeatinterval = null;
+        verifiedRecord.repeaton = null;
+        verifiedRecord.repeatunit = null;
+    } else {
+        if (!verifiedRecord.repeaton)
+            return "Appointment repeaton must be a character string of length 7 and containing only zeroes and ones";
+        if (verifiedRecord.repeatends == "never") {
+            verifiedRecord.repeatendsafter = null;
+            verifiedRecord.repeatendson = null;
+        } else if (verifiedRecord.repeatends == "on") {
+            verifiedRecord.repeatendsafter = null;
+            if (!verifiedRecord.repeatendson)
+                return "Appointment repetition ends on must be provided and in the form yyyy-mm-dd";
+        } else {
+            verifiedRecord.repeatendson = null;
+            if (!verifiedRecord.repeatendsafter)
+                return "Appointment repetition ends after must be provided and be a number greater than 1";
+        }
+
+    }
 
     // return a null string is everythin is ok
     return "";
